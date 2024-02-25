@@ -9,7 +9,11 @@
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
+    id 'java'
 }
+
+sourceCompatability = '21'
+targetCompatability = '21'
 
 repositories {
     // Use Maven Central for resolving dependencies.

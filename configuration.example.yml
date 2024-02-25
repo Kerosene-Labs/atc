@@ -1,4 +1,4 @@
-configurationVersion: "1.0.0"
+configuration_version: "1.0.0"
 
 server:
   responses:

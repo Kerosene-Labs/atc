@@ -11,6 +11,7 @@ import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 
+import com.smokelabs.requestdirector.configuration.ConfigurationHandler;
 import com.smokelabs.requestdirector.exception.MalformedHttpMessage;
 import com.smokelabs.requestdirector.server.HttpRequest;
 import com.smokelabs.requestdirector.server.HttpResponse;
@@ -37,6 +38,9 @@ public class Main {
         // set where our keystore lives
         System.setProperty("javax.net.ssl.keyStore", "keystore.p12");
         System.setProperty("javax.net.ssl.keyStorePassword", "my-secure-pw");
+
+        // initialize configuration handler
+        ConfigurationHandler configurationHandler = ConfigurationHandler.getInstance();
 
         // create the tls socket
         SSLServerSocketFactory factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
