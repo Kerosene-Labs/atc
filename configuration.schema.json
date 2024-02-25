@@ -6,6 +6,39 @@
       "type": "string",
       "description": "Which configuration version to use"
     },
+    "server": {
+      "type": "object",
+      "description": "Settings pertaining to Request Director itself",
+      "properties": {
+        "responses": {
+          "type": "object",
+          "description": "Settings pertaining to responses coming from Request Director, as opposed to a microservice",
+          "properties": {
+            "json": {
+              "type": "object",
+              "description": "Settings pertaining to responses coming from Request Director in JSON format",
+              "properties": {
+                "enable": {
+                  "type": "boolean",
+                  "description": "Whether or not to respond with JSON. If disabled, Request Director will respond using headers only & No Content"
+                }
+              }
+            }
+          }
+        },
+        "request_forking": {
+          "type": "object",
+          "description": "A way of running asynchronous requests on the server side",
+          "properties": {
+            "enable": {
+              "type": "boolean",
+              "description": "Whether or not to allow request forking"
+            }
+          }
+        }
+      },
+      "required": ["responses", "request_forking"]
+    },
     "services": {
       "type": "object",
       "description": "A list of services",
@@ -42,7 +75,8 @@
                 }
               },
               "required": [
-                "methods", "description"
+                "methods",
+                "description"
               ]
             }
           }
@@ -57,6 +91,7 @@
   },
   "required": [
     "configurationVersion",
-    "services"
+    "services",
+    "server"
   ]
 }

@@ -1,5 +1,12 @@
 configurationVersion: "1.0.0"
 
+server:
+  responses:
+    json:
+      enable: true
+  request_forking:
+    enable: true
+
 services:
   auth:
     description: "Authentication and Authorization of users"
