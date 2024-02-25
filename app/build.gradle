@@ -12,8 +12,11 @@ plugins {
     id 'java'
 }
 
-sourceCompatability = '21'
-targetCompatability = '21'
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
 
 repositories {
     // Use Maven Central for resolving dependencies.
