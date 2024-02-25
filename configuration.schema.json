@@ -23,10 +23,34 @@
           "address": {
             "type": "string",
             "description": "Which IP address / hostname to send the requests to"
+          },
+          "address_postfix": {
+            "type": "string",
+            "description": "Append a string to the end of your addres (ex: /v1)"
+          },
+          "scopes": {
+            "type": "object",
+            "description": "Scopes (endpoints) this service exposes",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "methods": {
+                  "type": "array"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "methods", "description"
+              ]
+            }
           }
         },
         "required": [
-          "description"
+          "description",
+          "address",
+          "scopes"
         ]
       }
     }

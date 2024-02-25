@@ -1,5 +1,14 @@
 configurationVersion: "1.0.0"
 
 services:
-  auth-service:
-    description: "1.0.0"
+  auth:
+    description: "Authentication and Authorization of users"
+    address: "auth.api.smokelabs.com"
+    address_postfix: "/v1"
+    maintainer: "hlafaille"
+    scopes:
+      /beginSession:
+        methods:
+          - POST
+        description: "Begins a session"
+
