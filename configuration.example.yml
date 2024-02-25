@@ -1,0 +1,5 @@
+configurationVersion: "1.0.0"
+
+services:
+  auth-service:
+    description: "1.0.0"

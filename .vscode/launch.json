@@ -6,9 +6,9 @@
     "configurations": [
         {
             "type": "java",
-            "name": "App",
+            "name": "Run",
             "request": "launch",
-            "mainClass": "com.smokeslabs.requestdirector.App",
+            "mainClass": "com.smokelabs.requestdirector.Main",
             "projectName": "app"
         }
     ]

@@ -1,4 +1,4 @@
-package com.smokeslabs.requestdirector.util;
+package com.smokelabs.requestdirector.util;
 
 public class StringUtils {
     public static String convertBytesToHex(byte[] bytes) {

@@ -1,26 +1,24 @@
-package com.smokeslabs.requestdirector;
+package com.smokelabs.requestdirector;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
-
+import java.util.UUID;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 
-import com.smokeslabs.requestdirector.exception.MalformedHttpMessage;
-import com.smokeslabs.requestdirector.server.HttpRequest;
-import com.smokeslabs.requestdirector.server.HttpResponse;
+import com.smokelabs.requestdirector.exception.MalformedHttpMessage;
+import com.smokelabs.requestdirector.server.HttpRequest;
+import com.smokelabs.requestdirector.server.HttpResponse;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class App {
+public class Main {
     public static void main(String[] args) throws IOException, MalformedHttpMessage {
         System.out.println(
                 "  _____  ______ ____  _    _ ______  _____ _______     \n" + //
@@ -73,8 +71,15 @@ public class App {
                 return;
             }
 
+            // build our trace
+            String traceId = UUID.randomUUID().toString();
+
+            // add the trace to our headers
+            HashMap<String, String> headers = new HashMap<>();
+            headers.put("X-RD-Trace", traceId);
+
             // build our response, send it
-            HttpResponse httpResponse = new HttpResponse(200, "OK", new HashMap<>(), "<p>RequestDirector v1.0.0</p>");
+            HttpResponse httpResponse = new HttpResponse(200, "OK", headers, "<p>RequestDirector v1.0.0</p>");
             output.write(httpResponse.getBytes("UTF-8"));
         }
         socket.close();

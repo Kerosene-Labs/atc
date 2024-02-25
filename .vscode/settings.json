@@ -1,3 +1,9 @@
 {
-    "java.configuration.updateBuildConfiguration": "automatic"
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "yaml.schemas": {
+        "/workspace/request-director/configuration.schema.json": [
+            "*.yml",
+            "file:///workspace/request-director/configuration.example.yml"
+        ]
+    }
 }

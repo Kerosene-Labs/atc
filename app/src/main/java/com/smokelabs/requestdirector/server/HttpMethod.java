@@ -1,4 +1,4 @@
-package com.smokeslabs.requestdirector.server;
+package com.smokelabs.requestdirector.server;
 
 public enum HttpMethod {
     GET,

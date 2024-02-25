@@ -1,4 +1,4 @@
-package com.smokeslabs.requestdirector.exception;
+package com.smokelabs.requestdirector.exception;
 
 /**
  * Represent a scenario in which an HTTP message could not be parsed

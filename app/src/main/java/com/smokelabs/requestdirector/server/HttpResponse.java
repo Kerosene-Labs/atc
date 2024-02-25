@@ -1,4 +1,4 @@
-package com.smokeslabs.requestdirector.server;
+package com.smokelabs.requestdirector.server;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -27,7 +27,12 @@ public class HttpResponse {
     public HttpResponse(int status, String statusText, HashMap<String, String> headers, String responseContent) {
         this.status = status;
         this.statusText = statusText;
+
+        if (headers == null) {
+            headers = new HashMap<>();
+        }
         this.headers = headers;
+
         this.responseContent = responseContent;
     }
 

@@ -1,11 +1,13 @@
-package com.smokeslabs.requestdirector.server;
+package com.smokelabs.requestdirector.server;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import com.smokeslabs.requestdirector.exception.MalformedHttpMessage;
+
+import com.smokelabs.requestdirector.exception.MalformedHttpMessage;
+
 import lombok.Getter;
 
 /**

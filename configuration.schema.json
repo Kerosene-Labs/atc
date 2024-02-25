@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "configurationVersion": {
+      "type": "string",
+      "description": "Which configuration version to use"
+    },
+    "services": {
+      "type": "object",
+      "description": "A list of services",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "A short description of this service"
+          },
+          "maintainer": {
+            "type": "string",
+            "description": "The name of the maintainer for this service"
+          },
+          "address": {
+            "type": "string",
+            "description": "Which IP address / hostname to send the requests to"
+          }
+        },
+        "required": [
+          "description"
+        ]
+      }
+    }
+  },
+  "required": [
+    "configurationVersion",
+    "services"
+  ]
+}
