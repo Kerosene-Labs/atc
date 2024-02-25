@@ -1,6 +1,7 @@
 # Request Director
-*An access management solution for internal APIs*
-With an emphasis on safety, reliability and ease of use, we will get these requests where they need to go!
+*The access management solution for companies with APIs*
+
+**With an emphasis on safety, reliability and ease of use, we will get these requests where they need to go!**
 
 # How it works
 Request Director in a nutshell is a middleman HTTPS server that handles directing requests to services internally. When writing an
