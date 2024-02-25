@@ -4,14 +4,17 @@
 **With an emphasis on safety, reliability and ease of use, we will get these requests where they need to go!**
 
 # Features
-- Service access control
-  - Control what applications can and can't talk to your microservices
-- Configuration hot reloading (no downtime)
-- Fork requests
-  - Call an endpoint on a service with the `X-RD-ForkMode: 1` header and receive a "Forked Request ID" in response.
-  - Poll the endpoint again with `X-RD-ForkId: yourForkIdHere`; Receiving `HTTP 503 Service Temporarily Unavailable` if the response is still not available, or receiving the proper response from your service.
-- Tracing
-  - Automated tracing with the `X-RD-Trace` header
+### Service access control
+Control what applications can and can't talk to your microservices.
+
+### Configuration Hot Reloads
+Request Director will automatically detect `configuration.yml` file changes and apply them, no restarts required!
+
+### Fork requests
+Call an endpoint on a service with the `X-RD-ForkMode: 1` header and receive a "Forked Request ID" in response. Poll the endpoint again with `X-RD-ForkId: yourForkIdHere`, receiving `HTTP 503 Service Temporarily Unavailable` if the response is still not available, or receiving the proper response from your service.
+
+### Tracing
+Automated tracing with the `X-RD-Trace` header.
 
 # How it works
 Request Director in a nutshell is a middleman HTTPS server that handles directing requests to services internally. When writing an
