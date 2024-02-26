@@ -51,6 +51,9 @@ public class HttpRequest {
         // handle reading the content, putting it into a string
         String line;
         while ((line = bufferedReader.readLine()) != "\r\n\r\n") {
+            if (line == null) {
+                throw new RuntimeException("no messages were received from socket; this shouldn't happen");
+            }
             httpRequestBeginning.append(line + "\r\n");
             if (line.isEmpty()) {
                 break;

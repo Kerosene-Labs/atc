@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.SocketException;
 import java.io.ObjectInputFilter.Config;
 import java.util.HashMap;
 import java.util.UUID;
@@ -27,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 public class Main {
     private static Configuration loadedConfiguration;
 
-    public static void main(String[] args) throws IOException, MalformedHttpMessage {
+    public static void main(String[] args) throws MalformedHttpMessage, InterruptedException {
         System.out.println(
                 "  _____  ______ ____  _    _ ______  _____ _______     \n" + //
                         " |  __ \\|  ____/ __ \\| |  | |  ____|/ ____|__   __|    \n" + //
@@ -45,53 +46,66 @@ public class Main {
                 "Hint: you can generate your configuration `services` section using an OpenAPI spec file!\n\n");
 
         // load our configuration
-        loadedConfiguration = ConfigurationHandler.getInstance().getLoadedConfiguration();
+        Thread configurationThread = Thread.ofVirtual().name("configuration").start(() -> {
+            loadedConfiguration = ConfigurationHandler.getInstance().getLoadedConfiguration();
+        });
+        configurationThread.join();
 
         // set where our keystore lives
         System.setProperty("javax.net.ssl.keyStore", "keystore.p12");
         System.setProperty("javax.net.ssl.keyStorePassword", "my-secure-pw");
 
         // create the tls socket
-        SSLServerSocketFactory factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
-        SSLServerSocket sslServerSocket = (SSLServerSocket) factory.createServerSocket(8443);
-        log.info("tls socket created: awaiting clients");
+        Thread serverThread = Thread.ofVirtual().name("https").start(() -> {
+            SSLServerSocketFactory factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+            try (SSLServerSocket sslServerSocket = (SSLServerSocket) factory.createServerSocket(8443)) {
+                log.info("tls socket created: awaiting clients");
 
-        while (true) {
-            try (SSLSocket socket = (SSLSocket) sslServerSocket.accept()) {
-                socket.setKeepAlive(true);
-                try {
-                    handleClient(socket);
-                } catch (Exception e) {
-                    log.error("exception occurred while handling client", e);
+                while (true) {
+                    try {
+                        handleClient(sslServerSocket);
+                    } catch (Exception e) {
+                        log.error("exception occurred while handling client", e);
+                    }
                 }
+            } catch (IOException e) {
+                log.error("io error on socket", e);
             }
-        }
+        });
+        serverThread.join();
     }
 
-    public static void handleClient(SSLSocket socket) throws IOException, MalformedHttpMessage {
-        InputStream input = socket.getInputStream();
-        OutputStream output = socket.getOutputStream();
+    public static void handleClient(SSLServerSocket sslServerSocket) throws IOException, MalformedHttpMessage {
+        try (SSLSocket socket = (SSLSocket) sslServerSocket.accept()) {
+            socket.setKeepAlive(true);
 
-        // handle the input
-        try (InputStreamReader inputStreamReader = new InputStreamReader(input)) {
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-
-            // parse our http request
-            HttpRequest httpRequest = new HttpRequest(bufferedReader);
-
-            // check if the socket is closed before we write any responses
             if (socket.isClosed()) {
-                log.info("unclean socket closure: client disconnected: this may indicate buggy code");
-                return;
+                throw new RuntimeException("socket closed before any handling could occurr");
             }
+            InputStream input = socket.getInputStream();
+            OutputStream output = socket.getOutputStream();
 
-            // direct our request & get a response
-            RequestDirector requestDirector = new RequestDirector(httpRequest);
-            HttpResponse httpResponse = requestDirector.directRequest();
+            // handle the input
+            try (InputStreamReader inputStreamReader = new InputStreamReader(input)) {
+                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 
-            // build our response, send it
-            output.write(httpResponse.getBytes("UTF-8"));
+                // parse our http request
+                HttpRequest httpRequest = new HttpRequest(bufferedReader);
+
+                // check if the socket is closed before we write any responses
+                if (socket.isClosed()) {
+                    log.info("unclean socket closure: client disconnected: this may indicate buggy code");
+                    return;
+                }
+
+                // direct our request & get a response
+                RequestDirector requestDirector = new RequestDirector(httpRequest);
+                HttpResponse httpResponse = requestDirector.directRequest();
+
+                // build our response, send it
+                output.write(httpResponse.getBytes("UTF-8"));
+            }
+            socket.close();
         }
-        socket.close();
     }
 }
