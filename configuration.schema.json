@@ -90,7 +90,7 @@
     }
   },
   "required": [
-    "configurationVersion",
+    "configuration_version",
     "services",
     "server"
   ]

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.ObjectInputFilter.Config;
 import java.util.HashMap;
 import java.util.UUID;
 import javax.net.ssl.SSLServerSocket;
@@ -12,14 +13,20 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 
 import com.smokelabs.requestdirector.configuration.ConfigurationHandler;
+import com.smokelabs.requestdirector.configuration.pojo.Configuration;
+import com.smokelabs.requestdirector.configuration.pojo.service.Service;
 import com.smokelabs.requestdirector.exception.MalformedHttpMessage;
 import com.smokelabs.requestdirector.server.HttpRequest;
 import com.smokelabs.requestdirector.server.HttpResponse;
+import com.smokelabs.requestdirector.server.RequestDirector;
+import com.smokelabs.requestdirector.util.ErrorCode;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Main {
+    private static Configuration loadedConfiguration;
+
     public static void main(String[] args) throws IOException, MalformedHttpMessage {
         System.out.println(
                 "  _____  ______ ____  _    _ ______  _____ _______     \n" + //
@@ -34,13 +41,15 @@ public class Main {
                         " | |__| || |_| | \\ \\| |___| |____   | | | |__| | | \\ \\ \n" + //
                         " |_____/_____|_|  \\_\\______\\_____|  |_|  \\____/|_|  \\_\\\n" + //
                         "");
+        System.out.println(
+                "Hint: you can generate your configuration `services` section using an OpenAPI spec file!\n\n");
+
+        // load our configuration
+        loadedConfiguration = new ConfigurationHandler().getLoadedConfiguration();
 
         // set where our keystore lives
         System.setProperty("javax.net.ssl.keyStore", "keystore.p12");
         System.setProperty("javax.net.ssl.keyStorePassword", "my-secure-pw");
-
-        // initialize configuration handler
-        ConfigurationHandler configurationHandler = ConfigurationHandler.getInstance();
 
         // create the tls socket
         SSLServerSocketFactory factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
@@ -49,6 +58,7 @@ public class Main {
 
         while (true) {
             try (SSLSocket socket = (SSLSocket) sslServerSocket.accept()) {
+                socket.setKeepAlive(true);
                 try {
                     handleClient(socket);
                 } catch (Exception e) {
@@ -75,15 +85,11 @@ public class Main {
                 return;
             }
 
-            // build our trace
-            String traceId = UUID.randomUUID().toString();
-
-            // add the trace to our headers
-            HashMap<String, String> headers = new HashMap<>();
-            headers.put("X-RD-Trace", traceId);
+            // direct our request & get a response
+            RequestDirector requestDirector = new RequestDirector(httpRequest);
+            HttpResponse httpResponse = requestDirector.directRequest();
 
             // build our response, send it
-            HttpResponse httpResponse = new HttpResponse(200, "OK", headers, "<p>RequestDirector v1.0.0</p>");
             output.write(httpResponse.getBytes("UTF-8"));
         }
         socket.close();

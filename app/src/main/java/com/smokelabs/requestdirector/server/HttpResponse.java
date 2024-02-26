@@ -3,6 +3,8 @@ package com.smokelabs.requestdirector.server;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 
+import com.smokelabs.requestdirector.util.HttpStatus;
+
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -11,10 +13,7 @@ import lombok.NonNull;
  */
 public class HttpResponse {
     @Getter
-    private int status;
-
-    @Getter
-    private String statusText;
+    private HttpStatus httpStatus;
 
     @Getter
     @NonNull
@@ -24,9 +23,8 @@ public class HttpResponse {
     @NonNull
     private String responseContent;
 
-    public HttpResponse(int status, String statusText, HashMap<String, String> headers, String responseContent) {
-        this.status = status;
-        this.statusText = statusText;
+    public HttpResponse(HttpStatus httpStatus, HashMap<String, String> headers, String responseContent) {
+        this.httpStatus = httpStatus;
 
         if (headers == null) {
             headers = new HashMap<>();
@@ -40,10 +38,14 @@ public class HttpResponse {
         StringBuilder response = new StringBuilder();
 
         // add our response line
-        response.append(String.format("HTTP/1.1 %s %s\r\n", status, statusText));
+        response.append(String.format("HTTP/1.1 %s %s\r\n", httpStatus.getCode(), httpStatus.getText()));
 
         // add our Content-Length header
-        headers.put("Content-Length", Integer.toString(responseContent.toCharArray().length));
+        if (responseContent == null) {
+            headers.put("Content-Length", "0");
+        } else {
+            headers.put("Content-Length", Integer.toString(responseContent.toCharArray().length));
+        }
 
         // add our headers
         for (String key : headers.keySet()) {
@@ -54,7 +56,9 @@ public class HttpResponse {
         response.append("\r\n");
 
         // add content
-        response.append(responseContent);
+        if (responseContent != null) {
+            response.append(responseContent);
+        }
         return response.toString();
     }
 
