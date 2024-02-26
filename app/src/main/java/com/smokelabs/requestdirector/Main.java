@@ -60,52 +60,54 @@ public class Main {
             SSLServerSocketFactory factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
             try (SSLServerSocket sslServerSocket = (SSLServerSocket) factory.createServerSocket(8443)) {
                 log.info("tls socket created: awaiting clients");
-
+                String traceId = "req:" + UUID.randomUUID().toString().replace("-", "");
                 while (true) {
-                    try {
-                        handleClient(sslServerSocket);
-                    } catch (Exception e) {
-                        log.error("exception occurred while handling client", e);
-                    }
+                    SSLSocket socket = (SSLSocket) sslServerSocket.accept();
+                    Thread requestThread = Thread.ofVirtual().name(traceId).start(() -> {
+                        try {
+                            handleClient(socket, traceId);
+                            socket.close();
+                        } catch (Exception e) {
+                            log.error("exception occurred while handling client", e);
+                        }
+                    });
                 }
             } catch (IOException e) {
                 log.error("io error on socket", e);
             }
         });
         serverThread.join();
+
     }
 
-    public static void handleClient(SSLServerSocket sslServerSocket) throws IOException, MalformedHttpMessage {
-        try (SSLSocket socket = (SSLSocket) sslServerSocket.accept()) {
-            socket.setKeepAlive(true);
+    public static void handleClient(SSLSocket socket, String traceId) throws IOException, MalformedHttpMessage {
+        if (socket.isClosed()) {
+            throw new RuntimeException("socket closed before any handling could occurr");
+        }
+        InputStream input = socket.getInputStream();
+        OutputStream output = socket.getOutputStream();
 
+        // handle the input
+        try (InputStreamReader inputStreamReader = new InputStreamReader(input)) {
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+
+            // parse our http request
+            HttpRequest httpRequest = new HttpRequest(bufferedReader);
+
+            // check if the socket is closed before we write any responses
             if (socket.isClosed()) {
-                throw new RuntimeException("socket closed before any handling could occurr");
+                log.info("unclean socket closure: client disconnected: this may indicate buggy code");
+                return;
             }
-            InputStream input = socket.getInputStream();
-            OutputStream output = socket.getOutputStream();
 
-            // handle the input
-            try (InputStreamReader inputStreamReader = new InputStreamReader(input)) {
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            // direct our request & get a response
+            RequestDirector requestDirector = new RequestDirector(httpRequest, traceId);
+            HttpResponse httpResponse = requestDirector.directRequest();
 
-                // parse our http request
-                HttpRequest httpRequest = new HttpRequest(bufferedReader);
+            log.info("sending response");
 
-                // check if the socket is closed before we write any responses
-                if (socket.isClosed()) {
-                    log.info("unclean socket closure: client disconnected: this may indicate buggy code");
-                    return;
-                }
-
-                // direct our request & get a response
-                RequestDirector requestDirector = new RequestDirector(httpRequest);
-                HttpResponse httpResponse = requestDirector.directRequest();
-
-                // build our response, send it
-                output.write(httpResponse.getBytes("UTF-8"));
-            }
-            socket.close();
+            // build our response, send it
+            output.write(httpResponse.getBytes("UTF-8"));
         }
     }
 }

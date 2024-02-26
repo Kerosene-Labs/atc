@@ -30,18 +30,10 @@ public class RequestDirector {
     /**
      * Constructor
      */
-    public RequestDirector(HttpRequest httpRequest) {
+    public RequestDirector(HttpRequest httpRequest, String traceId) {
         this.httpRequest = httpRequest;
+        this.traceId = traceId;
         this.loadedConfiguration = ConfigurationHandler.getInstance().getLoadedConfiguration();
-    }
-
-    /**
-     * Get a Trace ID for this request/response
-     * 
-     * @return
-     */
-    private void generateTraceId() {
-        traceId = UUID.randomUUID().toString();
     }
 
     /**
@@ -60,9 +52,6 @@ public class RequestDirector {
      * @return HttpResponse object to be sent over the socket
      */
     public HttpResponse directRequest() {
-        // generate a trace id
-        generateTraceId();
-
         // generate our response headers
         generateBaseResponseHeaders();
 
