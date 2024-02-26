@@ -45,7 +45,7 @@ public class Main {
                 "Hint: you can generate your configuration `services` section using an OpenAPI spec file!\n\n");
 
         // load our configuration
-        loadedConfiguration = new ConfigurationHandler().getLoadedConfiguration();
+        loadedConfiguration = ConfigurationHandler.getInstance().getLoadedConfiguration();
 
         // set where our keystore lives
         System.setProperty("javax.net.ssl.keyStore", "keystore.p12");
