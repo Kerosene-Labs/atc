@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import com.smokelabs.requestdirector.client.HttpForwarder;
 import com.smokelabs.requestdirector.configuration.ConfigurationHandler;
 import com.smokelabs.requestdirector.configuration.pojo.Configuration;
 import com.smokelabs.requestdirector.configuration.pojo.service.Service;

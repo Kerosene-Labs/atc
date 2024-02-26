@@ -8,14 +8,13 @@ server:
     enable: true
 
 services:
-  auth:
+  weather:
     description: "Authentication and Authorization of users"
-    address: "auth.api.smokelabs.com"
-    address_postfix: "/v1"
-    maintainer: "hlafaille"
+    address: "api.weather.gov"
+    maintainer: "US Government"
     scopes:
-      /beginSession:
+      /:
         methods:
-          - POST
-        description: "Begins a session"
+          - GET
+        description: "Health check"
 
