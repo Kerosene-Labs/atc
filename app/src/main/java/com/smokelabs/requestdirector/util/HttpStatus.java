@@ -20,6 +20,15 @@ public enum HttpStatus {
         this.text = text;
     }
 
+    public static HttpStatus getFromCode(int code) {
+        for (HttpStatus x : HttpStatus.values()) {
+            if (x.getCode() == code) {
+                return x;
+            }
+        }
+        throw new RuntimeException(String.format("http status code with int '%s' does not exist", code));
+    }
+
     public int getCode() {
         return this.code;
     }

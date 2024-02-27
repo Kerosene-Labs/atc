@@ -60,11 +60,12 @@ public class Main {
             SSLServerSocketFactory factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
             try (SSLServerSocket sslServerSocket = (SSLServerSocket) factory.createServerSocket(8443)) {
                 log.info("tls socket created: awaiting clients");
-                String traceId = "req:" + UUID.randomUUID().toString().replace("-", "");
                 while (true) {
                     SSLSocket socket = (SSLSocket) sslServerSocket.accept();
-                    Thread requestThread = Thread.ofVirtual().name(traceId).start(() -> {
+                    Thread requestThread = Thread.startVirtualThread(() -> {
                         try {
+                            String traceId = "req:" + UUID.randomUUID().toString().replace("-", "");
+                            Thread.currentThread().setName(traceId);
                             handleClient(socket, traceId);
                             socket.close();
                         } catch (Exception e) {
@@ -80,7 +81,8 @@ public class Main {
 
     }
 
-    public static void handleClient(SSLSocket socket, String traceId) throws IOException, MalformedHttpMessage {
+    public static void handleClient(SSLSocket socket, String traceId)
+            throws IOException, MalformedHttpMessage, InterruptedException {
         if (socket.isClosed()) {
             throw new RuntimeException("socket closed before any handling could occurr");
         }

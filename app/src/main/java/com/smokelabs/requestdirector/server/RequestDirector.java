@@ -1,5 +1,6 @@
 package com.smokelabs.requestdirector.server;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -50,8 +51,10 @@ public class RequestDirector {
      * Determine what to do with this request
      * 
      * @return HttpResponse object to be sent over the socket
+     * @throws InterruptedException
+     * @throws IOException
      */
-    public HttpResponse directRequest() {
+    public HttpResponse directRequest() throws IOException, InterruptedException {
         // generate our response headers
         generateBaseResponseHeaders();
 
@@ -59,7 +62,7 @@ public class RequestDirector {
         String requestHost = httpRequest.getHeaders().get("host");
 
         // set a base response
-        HttpResponse httpResponse = new HttpResponse(HttpStatus.OK, headers, requestHost);
+        HttpResponse httpResponse = new HttpResponse(HttpStatus.OK, headers, null);
 
         // handle determining the routing of this request
         boolean matchingServiceFound = false;
@@ -68,13 +71,16 @@ public class RequestDirector {
             service = loadedConfiguration.getServices().get(serviceName);
 
             // todo call this service, do all that jazz
-            if (service.getAddress() == requestHost) {
+            if (service.getAddress().equals(requestHost)) {
                 matchingServiceFound = true;
             }
         }
 
-        // if a service couldn't be found
-        if (!matchingServiceFound) {
+        // if a service was found
+        if (matchingServiceFound) {
+            log.info(String.format("sending request to upstream (%s)", httpRequest.getHeaders().get("host")));
+            httpResponse = HttpForwarder.getResponseFromUpstream(httpRequest);
+        } else if (!matchingServiceFound) {
             headers.put("X-RD-Error", ErrorCode.SERVICE_NOT_FOUND.getCode());
             httpResponse = new HttpResponse(HttpStatus.BAD_REQUEST, headers, null);
         }
