@@ -9,7 +9,7 @@ server:
 
 services:
   weather:
-    description: "Authentication and Authorization of users"
+    description: "Weather"
     address: "api.weather.gov"
     maintainer: "US Government"
     scopes:
@@ -17,4 +17,15 @@ services:
         methods:
           - GET
         description: "Health check"
+
+  google:
+    description: "El Goog"
+    address: "google.com"
+    maintainer: "Alphabet"
+    scopes:
+      /:
+        methods:
+          - GET
+        description: "Health check"
+
 

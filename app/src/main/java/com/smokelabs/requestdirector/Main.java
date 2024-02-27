@@ -21,6 +21,7 @@ import com.smokelabs.requestdirector.server.HttpRequest;
 import com.smokelabs.requestdirector.server.HttpResponse;
 import com.smokelabs.requestdirector.server.RequestDirector;
 import com.smokelabs.requestdirector.util.ErrorCode;
+import com.smokelabs.requestdirector.util.HttpStatus;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -62,14 +63,29 @@ public class Main {
                 log.info("tls socket created: awaiting clients");
                 while (true) {
                     SSLSocket socket = (SSLSocket) sslServerSocket.accept();
-                    Thread requestThread = Thread.startVirtualThread(() -> {
+                    Thread.startVirtualThread(() -> {
+                        HttpResponse httpResponse;
+
+                        // do our request
                         try {
                             String traceId = "req:" + UUID.randomUUID().toString().replace("-", "");
                             Thread.currentThread().setName(traceId);
-                            handleClient(socket, traceId);
-                            socket.close();
+                            httpResponse = handleClient(socket, traceId);
                         } catch (Exception e) {
+                            // if any error during request/response lifecycle happened, return anything we
+                            // can
                             log.error("exception occurred while handling client", e);
+                            HashMap<String, String> headers = new HashMap<>();
+                            headers.put("X-RD-Error", ErrorCode.ERROR_OCCURRED_DURING_REQUEST_HANDLING.getCode());
+                            httpResponse = new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, headers, null);
+                        }
+
+                        // close our socket regardless of any exception during the request/response
+                        // lifecycle
+                        try {
+                            socket.close();
+                        } catch (IOException e) {
+                            log.error("failed to close socket", e);
                         }
                     });
                 }
@@ -81,7 +97,7 @@ public class Main {
 
     }
 
-    public static void handleClient(SSLSocket socket, String traceId)
+    public static HttpResponse handleClient(SSLSocket socket, String traceId)
             throws IOException, MalformedHttpMessage, InterruptedException {
         if (socket.isClosed()) {
             throw new RuntimeException("socket closed before any handling could occurr");
@@ -99,17 +115,19 @@ public class Main {
             // check if the socket is closed before we write any responses
             if (socket.isClosed()) {
                 log.info("unclean socket closure: client disconnected: this may indicate buggy code");
-                return;
+                return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, new HashMap<>(), traceId);
             }
 
             // direct our request & get a response
             RequestDirector requestDirector = new RequestDirector(httpRequest, traceId);
             HttpResponse httpResponse = requestDirector.directRequest();
 
-            log.info("sending response");
+            log.info("responding back to client");
 
-            // build our response, send it
+            // todo idk why this works here?????
             output.write(httpResponse.getBytes("UTF-8"));
+
+            return httpResponse;
         }
     }
 }

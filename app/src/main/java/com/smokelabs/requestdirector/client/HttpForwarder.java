@@ -26,6 +26,9 @@ public class HttpForwarder {
             responseHeaders.put(headerName, httpResponse.headers().firstValue(headerName).get().toString());
         }
 
+        // add our header to let the client know we're involved
+        responseHeaders.put("X-RD-InLine", "1");
+
         // convert a stdlib HttpResponse to our custom HttpResponse
         return new HttpResponse(HttpStatus.getFromCode(httpResponse.statusCode()), responseHeaders,
                 httpResponse.body());
