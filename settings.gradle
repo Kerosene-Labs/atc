@@ -8,4 +8,4 @@
  */
 
 rootProject.name = 'request-director'
-include('app')
+include('src')
