@@ -9,7 +9,7 @@
             "name": "Run",
             "request": "launch",
             "mainClass": "com.smokelabs.requestdirector.Main",
-            "projectName": "app"
+            "projectName": "request-director"
         }
     ]
 }
