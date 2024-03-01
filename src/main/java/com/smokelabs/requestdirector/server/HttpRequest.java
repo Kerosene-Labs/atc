@@ -45,10 +45,7 @@ public class HttpRequest {
 
         // handle reading the content, putting it into a string
         String line;
-        while ((line = bufferedReader.readLine()) != "\r\n\r\n") {
-            if (line == null) {
-                throw new RuntimeException("no messages were received from socket; this shouldn't happen");
-            }
+        while (!(line = bufferedReader.readLine()).equals("\r\n\r\n")) {
             httpRequestBeginning.append(line + "\r\n");
             if (line.isEmpty()) {
                 break;
@@ -77,19 +74,24 @@ public class HttpRequest {
                 // determine our key/value pair for this header string
                 StringBuilder headerName = new StringBuilder();
                 StringBuilder headerValue = new StringBuilder();
-                boolean afterSeparator = false;
-                for (char character : currentLine.toCharArray()) {
+
+                // iterate over each character in the string
+                char[] currentLineChars = currentLine.toCharArray();
+                boolean passedSeparator = false;
+                int headerCharN;
+                for (headerCharN = 0; headerCharN < currentLineChars.length; headerCharN++) {
                     // if this is the first colon
-                    if (character == ':' && !afterSeparator) {
-                        afterSeparator = true;
+                    if (currentLineChars[headerCharN] == ':' && !passedSeparator) {
+                        passedSeparator = true;
+                        headerCharN += 2;
                         continue;
                     }
 
                     // if we're not past the first colon, this must be the header name
-                    if (!afterSeparator) {
-                        headerName.append(character);
+                    if (!passedSeparator) {
+                        headerName.append(currentLineChars[headerCharN]);
                     } else {
-                        headerValue.append(character);
+                        headerValue.append(currentLineChars[headerCharN]);
                     }
                 }
                 headers.put(headerName.toString().toLowerCase(), headerValue.toString().toLowerCase());
