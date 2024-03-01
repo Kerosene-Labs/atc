@@ -10,6 +10,8 @@ import lombok.NonNull;
 
 /**
  * A wrapper for HTTP responses
+ * 
+ * @author hlafaille
  */
 public class HttpResponse {
     @Getter

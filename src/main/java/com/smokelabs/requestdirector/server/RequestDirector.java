@@ -15,6 +15,11 @@ import com.smokelabs.requestdirector.util.HttpStatus;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Routes a request to its destined service
+ * 
+ * @author hlafaille
+ */
 @Slf4j
 public class RequestDirector {
     private Configuration loadedConfiguration;
@@ -39,8 +44,6 @@ public class RequestDirector {
 
     /**
      * Get the base headers (changes depending on the server configuration)
-     * 
-     * @return
      */
     private void generateBaseResponseHeaders() {
         this.headers = new HashMap<>();
