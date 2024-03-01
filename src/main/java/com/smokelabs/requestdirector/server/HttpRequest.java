@@ -83,7 +83,7 @@ public class HttpRequest {
                     // if this is the first colon
                     if (currentLineChars[headerCharN] == ':' && !passedSeparator) {
                         passedSeparator = true;
-                        headerCharN += 2;
+                        headerCharN += 1;
                         continue;
                     }
 
