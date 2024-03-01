@@ -62,19 +62,37 @@ public class HttpRequest {
         // (ex: Content-Type: application/json)
         int n;
         for (n = 0; n < lines.size(); n++) {
+            String currentLine = lines.get(n);
+
             // request line
             if (n == 0) {
-                String[] parts = lines.get(n).split(" ");
+                String[] parts = currentLine.split(" ");
                 method = HttpMethod.valueOf(parts[0]);
                 resource = parts[1];
                 protocolVersion = parts[2];
             }
 
-            // headers & content
+            // headers
             if (n > 0) {
-                String[] splitHeader = lines.get(n).split(":"); // <-- note: there is a bug here on Location:
-                                                                // localhost:8443, it splits twice!
-                headers.put(splitHeader[0].toLowerCase(), splitHeader[1].substring(1).toLowerCase());
+                // determine our key/value pair for this header string
+                StringBuilder headerName = new StringBuilder();
+                StringBuilder headerValue = new StringBuilder();
+                boolean afterSeparator = false;
+                for (char character : currentLine.toCharArray()) {
+                    // if this is the first colon
+                    if (character == ':' && !afterSeparator) {
+                        afterSeparator = true;
+                        continue;
+                    }
+
+                    // if we're not past the first colon, this must be the header name
+                    if (!afterSeparator) {
+                        headerName.append(character);
+                    } else {
+                        headerValue.append(character);
+                    }
+                }
+                headers.put(headerName.toString().toLowerCase(), headerValue.toString().toLowerCase());
             }
         }
 
