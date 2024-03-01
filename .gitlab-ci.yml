@@ -25,6 +25,9 @@ build:
       - build
       - .gradle
 
+include:
+  - template: Jobs/SAST.gitlab-ci.yml
+
 # test:
 #   stage: test
 #   script: gradle check
