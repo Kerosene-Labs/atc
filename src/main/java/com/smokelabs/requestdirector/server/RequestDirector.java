@@ -44,8 +44,6 @@ public class RequestDirector {
 
     /**
      * Get the base headers (changes depending on the server configuration)
-     * 
-     * @return
      */
     private void generateBaseResponseHeaders() {
         this.headers = new HashMap<>();
