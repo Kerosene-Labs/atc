@@ -11,16 +11,11 @@ import com.smokelabs.requestdirector.exception.MalformedHttpMessage;
 import lombok.Getter;
 
 /**
- * A parser for HTTP Requests
+ * A parser for raw HTTP Request messages
+ * 
+ * @author hlafaille
  */
 public class HttpRequest {
-
-    private static final String[] supportedMethods = {
-            "GET",
-            "POST",
-            "PUT",
-            "DELETE"
-    };
 
     @Getter
     private HttpMethod method;
