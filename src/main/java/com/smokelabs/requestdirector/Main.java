@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Main {
     private static Configuration loadedConfiguration;
+    private static SSLSocket socket;
 
     public static void main(String[] args) throws MalformedHttpMessage, InterruptedException {
         System.out.println(
@@ -63,31 +64,16 @@ public class Main {
             try (SSLServerSocket sslServerSocket = (SSLServerSocket) factory.createServerSocket(8443)) {
                 log.info("tls socket created: awaiting clients");
                 while (true) {
-                    SSLSocket socket = (SSLSocket) sslServerSocket.accept();
-                    Thread.startVirtualThread(() -> {
-                        HttpResponse httpResponse;
+                    socket = (SSLSocket) sslServerSocket.accept();
+                    socket.setSoTimeout(10000);
+                    InputStream inputStream = socket.getInputStream();
+                    OutputStream outputStream = socket.getOutputStream();
 
-                        // do our request
-                        try {
-                            String traceId = "req:" + UUID.randomUUID().toString().replace("-", "");
-                            Thread.currentThread().setName(traceId);
-                            httpResponse = handleClient(socket, traceId);
-                        } catch (Exception e) {
-                            // if any error during request/response lifecycle happened
-                            log.error("exception occurred while handling client", e);
-                            HashMap<String, String> headers = new HashMap<>();
-                            headers.put("X-RD-Error", ErrorCode.ERROR_OCCURRED_DURING_REQUEST_HANDLING.getCode());
-                            httpResponse = new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, headers, null);
-                        }
-
-                        // close our socket regardless of any exception during the request/response
-                        // lifecycle
-                        try {
-                            socket.close();
-                        } catch (IOException e) {
-                            log.error("failed to close socket", e);
-                        }
-                    });
+                    try {
+                        dispatchThread(socket, inputStream, outputStream);
+                    } catch (Exception e) {
+                        log.error("an error occurred during the request lifecycle", e);
+                    }
                 }
             } catch (IOException e) {
                 log.error("io error on socket", e);
@@ -97,37 +83,64 @@ public class Main {
 
     }
 
-    public static HttpResponse handleClient(SSLSocket socket, String traceId)
-            throws IOException, MalformedHttpMessage, InterruptedException, InvalidHttpRequestException {
-        if (socket.isClosed()) {
-            throw new RuntimeException("socket closed before any handling could occurr");
-        }
-        InputStream input = socket.getInputStream();
-        OutputStream output = socket.getOutputStream();
-
-        // handle the input
-        try (InputStreamReader inputStreamReader = new InputStreamReader(input)) {
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-
-            // parse our http request
-            HttpRequest httpRequest = new HttpRequest(bufferedReader);
-
-            // check if the socket is closed before we write any responses
+    public static void dispatchThread(SSLSocket socket, InputStream input, OutputStream output) {
+        Thread.startVirtualThread(() -> {
             if (socket.isClosed()) {
-                log.info("unclean socket closure: client disconnected: this may indicate buggy code");
-                return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, new HashMap<>(), traceId);
+                throw new RuntimeException("received closed socket at beginning of dispatch");
             }
 
-            // direct our request & get a response
-            RequestDirector requestDirector = new RequestDirector(httpRequest, traceId);
-            HttpResponse httpResponse = requestDirector.directRequest();
+            HttpResponse httpResponse;
 
-            log.info("responding back to client");
+            // do our request
+            try {
+                String traceId = "req:" + UUID.randomUUID().toString().replace("-", "");
+                Thread.currentThread().setName(traceId);
+                httpResponse = handleClient(input, output, traceId); // <-- this causes the socket to close..?
+                // httpResponse = new HttpResponse(HttpStatus.OK, new HashMap<>(), "Hello,
+                // World!");
+            } catch (Exception e) {
+                // if any error during request/response lifecycle happened
+                log.error("exception occurred while handling client", e);
+                HashMap<String, String> headers = new HashMap<>();
+                headers.put("X-RD-Error", ErrorCode.ERROR_OCCURRED_DURING_REQUEST_HANDLING.getCode());
+                httpResponse = new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, headers, null);
+            }
 
-            // todo idk why this works here?????
-            output.write(httpResponse.getBytes("UTF-8"));
+            if (socket.isClosed()) {
+                throw new RuntimeException("socket closed before writing could occurr");
+            }
 
-            return httpResponse;
+            try {
+                output.write(httpResponse.getBytes("UTF-8"));
+            } catch (IOException e) {
+                log.error("failed to write response to stream", e);
+            }
+
+            try {
+                input.close();
+                output.close();
+                socket.close();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        });
+    }
+
+    public static HttpResponse handleClient(InputStream input, OutputStream output, String traceId)
+            throws IOException, MalformedHttpMessage, InterruptedException, InvalidHttpRequestException {
+        // handle the input
+        try (InputStreamReader inputStreamReader = new InputStreamReader(input)) {
+            try (BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+                // parse our http request
+                HttpRequest httpRequest = new HttpRequest(bufferedReader);
+
+                // direct our request & get a response
+                // RequestDirector requestDirector = new RequestDirector(httpRequest, traceId);
+                // HttpResponse httpResponse = requestDirector.directRequest();
+                HttpResponse httpResponse = new HttpResponse(HttpStatus.OK, new HashMap<>(), "<h1>Hello, World!</h1>");
+                return httpResponse;
+            }
         }
     }
 }

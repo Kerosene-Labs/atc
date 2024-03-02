@@ -54,11 +54,10 @@ public class HttpResponse {
             response.append(String.format("%s: %s\r\n", key, headers.get(key)));
         }
 
-        // add the break point between headers and content
-        response.append("\r\n");
-
         // add content
         if (responseContent != null) {
+            // add the break point between headers and content
+            response.append("\r\n");
             response.append(responseContent);
         }
         return response.toString();
