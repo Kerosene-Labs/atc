@@ -6,6 +6,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.HashMap;
 
+import com.smokelabs.requestdirector.exception.HeaderNotFoundException;
+import com.smokelabs.requestdirector.exception.InvalidHttpRequestException;
 import com.smokelabs.requestdirector.server.HttpRequest;
 import com.smokelabs.requestdirector.server.HttpResponse;
 import com.smokelabs.requestdirector.util.HttpStatus;
@@ -35,13 +37,21 @@ public class HttpForwarder {
     }
 
     public static HttpResponse getResponseFromUpstream(HttpRequest httpRequest)
-            throws IOException, InterruptedException {
+            throws IOException, InterruptedException, InvalidHttpRequestException {
         HttpClient client = HttpClient.newHttpClient();
-        java.net.http.HttpRequest stdHttpRequest = java.net.http.HttpRequest.newBuilder()
-                .uri(URI.create("https://" + httpRequest.getHeaders().get("host") + httpRequest.getResource()))
-                .GET()
-                .build();
-        java.net.http.HttpResponse<String> upstreamResponse = client.send(stdHttpRequest, BodyHandlers.ofString());
-        return convertStdHttpResponseToCustomHttpResponse(upstreamResponse);
+
+        try {
+            String hostHeaderValue = httpRequest.getHeaders().getByName("Host").getValue();
+
+            java.net.http.HttpRequest stdHttpRequest = java.net.http.HttpRequest.newBuilder()
+                    .uri(URI.create(
+                            "https://" + hostHeaderValue + httpRequest.getResource()))
+                    .GET()
+                    .build();
+            java.net.http.HttpResponse<String> upstreamResponse = client.send(stdHttpRequest, BodyHandlers.ofString());
+            return convertStdHttpResponseToCustomHttpResponse(upstreamResponse);
+        } catch (HeaderNotFoundException e) {
+            throw new InvalidHttpRequestException("host header is missing");
+        }
     }
 }

@@ -16,6 +16,7 @@ import javax.net.ssl.SSLSocket;
 import com.smokelabs.requestdirector.configuration.ConfigurationHandler;
 import com.smokelabs.requestdirector.configuration.pojo.Configuration;
 import com.smokelabs.requestdirector.configuration.pojo.service.Service;
+import com.smokelabs.requestdirector.exception.InvalidHttpRequestException;
 import com.smokelabs.requestdirector.exception.MalformedHttpMessage;
 import com.smokelabs.requestdirector.server.HttpRequest;
 import com.smokelabs.requestdirector.server.HttpResponse;
@@ -72,8 +73,7 @@ public class Main {
                             Thread.currentThread().setName(traceId);
                             httpResponse = handleClient(socket, traceId);
                         } catch (Exception e) {
-                            // if any error during request/response lifecycle happened, return anything we
-                            // can
+                            // if any error during request/response lifecycle happened
                             log.error("exception occurred while handling client", e);
                             HashMap<String, String> headers = new HashMap<>();
                             headers.put("X-RD-Error", ErrorCode.ERROR_OCCURRED_DURING_REQUEST_HANDLING.getCode());
@@ -98,7 +98,7 @@ public class Main {
     }
 
     public static HttpResponse handleClient(SSLSocket socket, String traceId)
-            throws IOException, MalformedHttpMessage, InterruptedException {
+            throws IOException, MalformedHttpMessage, InterruptedException, InvalidHttpRequestException {
         if (socket.isClosed()) {
             throw new RuntimeException("socket closed before any handling could occurr");
         }
