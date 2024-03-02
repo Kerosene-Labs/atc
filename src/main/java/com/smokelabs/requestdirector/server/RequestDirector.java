@@ -9,6 +9,8 @@ import com.smokelabs.requestdirector.client.HttpForwarder;
 import com.smokelabs.requestdirector.configuration.ConfigurationHandler;
 import com.smokelabs.requestdirector.configuration.pojo.Configuration;
 import com.smokelabs.requestdirector.configuration.pojo.service.Service;
+import com.smokelabs.requestdirector.exception.HeaderNotFoundException;
+import com.smokelabs.requestdirector.exception.InvalidHttpRequestException;
 import com.smokelabs.requestdirector.util.ErrorCode;
 import com.smokelabs.requestdirector.util.HttpStatus;
 
@@ -56,40 +58,46 @@ public class RequestDirector {
      * @return HttpResponse object to be sent over the socket
      * @throws InterruptedException
      * @throws IOException
+     * @throws InvalidHttpRequestException
      */
-    public HttpResponse directRequest() throws IOException, InterruptedException {
+    public HttpResponse directRequest() throws IOException, InterruptedException, InvalidHttpRequestException {
         // generate our response headers
         generateBaseResponseHeaders();
 
         // determine our request host
-        String requestHost = httpRequest.getHeaders().get("host");
+        try {
+            String requestHost = httpRequest.getHeaders().getByName("host").getValue();
 
-        // set a base response
-        HttpResponse httpResponse = new HttpResponse(HttpStatus.OK, headers, null);
+            // set a base response
+            HttpResponse httpResponse = new HttpResponse(HttpStatus.OK, headers, null);
 
-        // handle determining the routing of this request
-        boolean matchingServiceFound = false;
-        Service service;
-        for (String serviceName : loadedConfiguration.getServices().keySet()) {
-            service = loadedConfiguration.getServices().get(serviceName);
+            // handle determining the routing of this request
+            boolean matchingServiceFound = false;
+            Service service;
+            for (String serviceName : loadedConfiguration.getServices().keySet()) {
+                service = loadedConfiguration.getServices().get(serviceName);
 
-            // todo call this service, do all that jazz
-            if (service.getAddress().equals(requestHost)) {
-                matchingServiceFound = true;
+                // todo call this service, do all that jazz
+                if (service.getAddress().equals(requestHost)) {
+                    matchingServiceFound = true;
+                }
             }
-        }
 
-        // if a service was found
-        if (matchingServiceFound) {
-            log.info(String.format("sending request to upstream (%s)", httpRequest.getHeaders().get("host")));
-            httpResponse = HttpForwarder.getResponseFromUpstream(httpRequest);
-        } else if (!matchingServiceFound) {
-            headers.put("X-RD-Error", ErrorCode.SERVICE_NOT_FOUND.getCode());
-            httpResponse = new HttpResponse(HttpStatus.BAD_REQUEST, headers, null);
-        }
+            // if a service was found
+            if (matchingServiceFound) {
+                log.info(String.format("sending request to upstream (%s)",
+                        httpRequest.getHeaders().getByName("host").getValue()));
+                httpResponse = HttpForwarder.getResponseFromUpstream(httpRequest);
+            } else if (!matchingServiceFound) {
+                headers.put("X-RD-Error", ErrorCode.SERVICE_NOT_FOUND.getCode());
+                httpResponse = new HttpResponse(HttpStatus.BAD_REQUEST, headers, null);
+            }
 
-        // return our response back for transport over the socket
-        return httpResponse;
+            // return our response back for transport over the socket
+            return httpResponse;
+        } catch (HeaderNotFoundException e) {
+            throw new InvalidHttpRequestException("host header is missing");
+        }
     }
 
 }
