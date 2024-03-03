@@ -65,12 +65,8 @@ public class Main {
                 log.info("tls socket created: awaiting clients");
                 while (true) {
                     socket = (SSLSocket) sslServerSocket.accept();
-                    socket.setSoTimeout(10000);
-                    InputStream inputStream = socket.getInputStream();
-                    OutputStream outputStream = socket.getOutputStream();
-
                     try {
-                        dispatchThread(socket, inputStream, outputStream);
+                        dispatchThread(socket);
                     } catch (Exception e) {
                         log.error("an error occurred during the request lifecycle", e);
                     }
@@ -83,64 +79,59 @@ public class Main {
 
     }
 
-    public static void dispatchThread(SSLSocket socket, InputStream input, OutputStream output) {
+    public static void dispatchThread(SSLSocket socket) {
         Thread.startVirtualThread(() -> {
-            if (socket.isClosed()) {
-                throw new RuntimeException("received closed socket at beginning of dispatch");
-            }
+            try (
+                    InputStream inputStream = socket.getInputStream();
+                    InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                    OutputStream outputStream = socket.getOutputStream();) {
+                if (socket.isClosed()) {
+                    throw new RuntimeException("received closed socket at beginning of dispatch");
+                }
 
-            HttpResponse httpResponse;
+                HttpResponse httpResponse;
 
-            // do our request
-            try {
-                String traceId = "req:" + UUID.randomUUID().toString().replace("-", "");
-                Thread.currentThread().setName(traceId);
-                httpResponse = handleClient(input, output, traceId); // <-- this causes the socket to close..?
-                // httpResponse = new HttpResponse(HttpStatus.OK, new HashMap<>(), "Hello,
-                // World!");
-            } catch (Exception e) {
-                // if any error during request/response lifecycle happened
-                log.error("exception occurred while handling client", e);
-                HashMap<String, String> headers = new HashMap<>();
-                headers.put("X-RD-Error", ErrorCode.ERROR_OCCURRED_DURING_REQUEST_HANDLING.getCode());
-                httpResponse = new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, headers, null);
-            }
+                // do our request
+                try {
+                    String traceId = "req:" + UUID.randomUUID().toString().replace("-", "");
+                    Thread.currentThread().setName(traceId);
+                    httpResponse = handleClient(inputStreamReader, outputStream, traceId);
+                } catch (Exception e) {
+                    // if any error during request/response lifecycle happened
+                    log.error("exception occurred while handling client", e);
+                    HashMap<String, String> headers = new HashMap<>();
+                    headers.put("X-RD-Error", ErrorCode.ERROR_OCCURRED_DURING_REQUEST_HANDLING.getCode());
+                    httpResponse = new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, headers, null);
+                }
 
-            if (socket.isClosed()) {
-                throw new RuntimeException("socket closed before writing could occurr");
-            }
+                if (socket.isClosed()) {
+                    throw new RuntimeException("socket closed before writing could occurr");
+                }
 
-            try {
-                output.write(httpResponse.getBytes("UTF-8"));
-            } catch (IOException e) {
-                log.error("failed to write response to stream", e);
-            }
+                try {
+                    outputStream.write(httpResponse.getBytes("UTF-8"));
+                } catch (IOException e) {
+                    log.error("failed to write response to stream", e);
+                }
 
-            try {
-                input.close();
-                output.close();
                 socket.close();
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                log.error("socket or stream error", e);
             }
         });
     }
 
-    public static HttpResponse handleClient(InputStream input, OutputStream output, String traceId)
+    public static HttpResponse handleClient(InputStreamReader inputStreamReader, OutputStream output, String traceId)
             throws IOException, MalformedHttpMessage, InterruptedException, InvalidHttpRequestException {
-        // handle the input
-        try (InputStreamReader inputStreamReader = new InputStreamReader(input)) {
-            try (BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
-                // parse our http request
-                HttpRequest httpRequest = new HttpRequest(bufferedReader);
+        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 
-                // direct our request & get a response
-                // RequestDirector requestDirector = new RequestDirector(httpRequest, traceId);
-                // HttpResponse httpResponse = requestDirector.directRequest();
-                HttpResponse httpResponse = new HttpResponse(HttpStatus.OK, new HashMap<>(), "<h1>Hello, World!</h1>");
-                return httpResponse;
-            }
-        }
+        // parse our http request
+        HttpRequest httpRequest = new HttpRequest(bufferedReader);
+
+        // direct our request & get a response
+        RequestDirector requestDirector = new RequestDirector(httpRequest, traceId);
+        HttpResponse httpResponse = requestDirector.directRequest();
+        return httpResponse;
     }
 }
