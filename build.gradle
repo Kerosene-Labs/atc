@@ -41,7 +41,7 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClass = 'com.smokelabs.requestdirector.Main.Main'
+    mainClass = 'com.smokelabs.atc.Main.Main'
 }
 
 tasks.named('test') {
