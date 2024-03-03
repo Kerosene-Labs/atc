@@ -8,7 +8,7 @@
             "type": "java",
             "name": "Run",
             "request": "launch",
-            "mainClass": "com.smokelabs.requestdirector.Main",
+            "mainClass": "com.smokelabs.atc.Main",
             "projectName": "request-director"
         }
     ]
