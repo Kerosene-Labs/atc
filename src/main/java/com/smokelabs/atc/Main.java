@@ -26,7 +26,6 @@ import com.smokelabs.atc.util.AnsiCodes;
 import com.smokelabs.atc.util.ErrorCode;
 import com.smokelabs.atc.util.HttpStatus;
 
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -82,7 +81,7 @@ public class Main {
         Thread serverThread = Thread.ofVirtual().name("https").start(() -> {
             SSLServerSocketFactory factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
             try (SSLServerSocket sslServerSocket = (SSLServerSocket) factory.createServerSocket(8443)) {
-                log.info("tls socket created: awaiting clients");
+                log.info("tls server created: awaiting clients");
                 while (true) {
                     socket = (SSLSocket) sslServerSocket.accept();
                     try {
