@@ -12,9 +12,9 @@
 image: gradle:8.6-jdk21
 stages:
   - build
-  - test
   - build_jar
   - build_native
+  - test
 
 before_script:
   - GRADLE_USER_HOME="$(pwd)/.gradle"
