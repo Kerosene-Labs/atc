@@ -8,15 +8,15 @@ import java.util.HashMap;
 
 import com.smokelabs.atc.exception.HeaderNotFoundException;
 import com.smokelabs.atc.exception.InvalidHttpRequestException;
-import com.smokelabs.atc.server.HttpRequest;
-import com.smokelabs.atc.server.HttpResponse;
+import com.smokelabs.atc.server.AtcHttpRequest;
+import com.smokelabs.atc.server.AtcHttpResponse;
 import com.smokelabs.atc.util.HttpStatus;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class HttpForwarder {
-    private static HttpResponse convertStdHttpResponseToCustomHttpResponse(
+    private static AtcHttpResponse convertStdHttpResponseToCustomHttpResponse(
             java.net.http.HttpResponse<String> httpResponse) {
         HashMap<String, String> responseHeaders = new HashMap<>();
 
@@ -32,11 +32,19 @@ public class HttpForwarder {
         responseHeaders.put("X-RD-InLine", "1");
 
         // convert a stdlib HttpResponse to our custom HttpResponse
-        return new HttpResponse(HttpStatus.getFromCode(httpResponse.statusCode()), responseHeaders,
+        return new AtcHttpResponse(HttpStatus.getFromCode(httpResponse.statusCode()), responseHeaders,
                 httpResponse.body());
     }
 
-    public static HttpResponse getResponseFromUpstream(HttpRequest httpRequest)
+    /**
+     * 
+     * @param httpRequest
+     * @return
+     * @throws IOException
+     * @throws InterruptedException
+     * @throws InvalidHttpRequestException
+     */
+    public static AtcHttpResponse getResponseFromUpstream(AtcHttpRequest httpRequest)
             throws IOException, InterruptedException, InvalidHttpRequestException {
         HttpClient client = HttpClient.newHttpClient();
 
