@@ -39,7 +39,7 @@ build:
 build_native:
   image: ghcr.io/graalvm/graalvm-community:21
   stage: build_native
-  script: gradle --build-cache shadowJar
+  script: gradle --build-cache nativeCompile
   cache:
     key: "$CI_COMMIT_REF_NAME"
     policy: push
