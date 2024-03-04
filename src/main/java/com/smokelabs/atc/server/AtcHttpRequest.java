@@ -23,7 +23,7 @@ import lombok.Getter;
  * 
  * @author hlafaille
  */
-public class HttpRequest {
+public class AtcHttpRequest {
 
     @Getter
     private HttpMethod method;
@@ -139,7 +139,7 @@ public class HttpRequest {
      * @throws MalformedHttpMessage
      * @throws IOException
      */
-    public HttpRequest(BufferedReader bufferedReader) throws MalformedHttpMessage, IOException {
+    public AtcHttpRequest(BufferedReader bufferedReader) throws MalformedHttpMessage, IOException {
         List<String> messageHead = readRawMessageHead(bufferedReader);
 
         // do http request line

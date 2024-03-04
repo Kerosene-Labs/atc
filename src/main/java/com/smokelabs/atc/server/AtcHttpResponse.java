@@ -13,7 +13,7 @@ import lombok.NonNull;
  * 
  * @author hlafaille
  */
-public class HttpResponse {
+public class AtcHttpResponse {
     @Getter
     private HttpStatus httpStatus;
 
@@ -25,7 +25,7 @@ public class HttpResponse {
     @NonNull
     private String responseContent;
 
-    public HttpResponse(HttpStatus httpStatus, HashMap<String, String> headers, String responseContent) {
+    public AtcHttpResponse(HttpStatus httpStatus, HashMap<String, String> headers, String responseContent) {
         this.httpStatus = httpStatus;
 
         if (headers == null) {

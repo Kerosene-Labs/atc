@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.UUID;
@@ -18,14 +19,13 @@ import com.smokelabs.atc.configuration.ConfigurationHandler;
 import com.smokelabs.atc.configuration.pojo.Configuration;
 import com.smokelabs.atc.exception.InvalidHttpRequestException;
 import com.smokelabs.atc.exception.MalformedHttpMessage;
-import com.smokelabs.atc.server.HttpRequest;
-import com.smokelabs.atc.server.HttpResponse;
+import com.smokelabs.atc.server.AtcHttpRequest;
+import com.smokelabs.atc.server.AtcHttpResponse;
 import com.smokelabs.atc.server.RequestDirector;
 import com.smokelabs.atc.util.AnsiCodes;
 import com.smokelabs.atc.util.ErrorCode;
 import com.smokelabs.atc.util.HttpStatus;
 
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -81,7 +81,7 @@ public class Main {
         Thread serverThread = Thread.ofVirtual().name("https").start(() -> {
             SSLServerSocketFactory factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
             try (SSLServerSocket sslServerSocket = (SSLServerSocket) factory.createServerSocket(8443)) {
-                log.info("tls socket created: awaiting clients");
+                log.info("tls server created: awaiting clients");
                 while (true) {
                     socket = (SSLSocket) sslServerSocket.accept();
                     try {
@@ -109,7 +109,7 @@ public class Main {
                     throw new RuntimeException("received closed socket at beginning of dispatch");
                 }
 
-                HttpResponse httpResponse;
+                AtcHttpResponse httpResponse;
 
                 // do our request
                 try {
@@ -121,7 +121,7 @@ public class Main {
                     log.error("exception occurred while handling client", e);
                     HashMap<String, String> headers = new HashMap<>();
                     headers.put("X-RD-Error", ErrorCode.ERROR_OCCURRED_DURING_REQUEST_HANDLING.getCode());
-                    httpResponse = new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, headers, null);
+                    httpResponse = new AtcHttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, headers, null);
                 }
 
                 if (socket.isClosed()) {
@@ -141,16 +141,17 @@ public class Main {
         });
     }
 
-    public static HttpResponse handleClient(InputStreamReader inputStreamReader, OutputStream output, String traceId)
-            throws IOException, MalformedHttpMessage, InterruptedException, InvalidHttpRequestException {
+    public static AtcHttpResponse handleClient(InputStreamReader inputStreamReader, OutputStream output, String traceId)
+            throws IOException, MalformedHttpMessage, InterruptedException, InvalidHttpRequestException,
+            URISyntaxException {
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 
         // parse our http request
-        HttpRequest httpRequest = new HttpRequest(bufferedReader);
+        AtcHttpRequest httpRequest = new AtcHttpRequest(bufferedReader);
 
         // direct our request & get a response
         RequestDirector requestDirector = new RequestDirector(httpRequest, traceId);
-        HttpResponse httpResponse = requestDirector.directRequest();
+        AtcHttpResponse httpResponse = requestDirector.directRequest();
         return httpResponse;
     }
 }

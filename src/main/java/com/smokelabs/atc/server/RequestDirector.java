@@ -1,6 +1,7 @@
 package com.smokelabs.atc.server;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -27,7 +28,7 @@ public class RequestDirector {
     private Configuration loadedConfiguration;
 
     @NonNull
-    private HttpRequest httpRequest;
+    private AtcHttpRequest httpRequest;
 
     @NonNull
     private String traceId;
@@ -38,7 +39,7 @@ public class RequestDirector {
     /**
      * Constructor
      */
-    public RequestDirector(HttpRequest httpRequest, String traceId) {
+    public RequestDirector(AtcHttpRequest httpRequest, String traceId) {
         this.httpRequest = httpRequest;
         this.traceId = traceId;
         this.loadedConfiguration = ConfigurationHandler.getInstance().getLoadedConfiguration();
@@ -59,8 +60,10 @@ public class RequestDirector {
      * @throws InterruptedException
      * @throws IOException
      * @throws InvalidHttpRequestException
+     * @throws URISyntaxException
      */
-    public HttpResponse directRequest() throws IOException, InterruptedException, InvalidHttpRequestException {
+    public AtcHttpResponse directRequest()
+            throws IOException, InterruptedException, InvalidHttpRequestException, URISyntaxException {
         // generate our response headers
         generateBaseResponseHeaders();
 
@@ -69,7 +72,7 @@ public class RequestDirector {
             String requestHost = httpRequest.getHeaders().getByName("host").getValue();
 
             // set a base response
-            HttpResponse httpResponse = new HttpResponse(HttpStatus.OK, headers, null);
+            AtcHttpResponse httpResponse = new AtcHttpResponse(HttpStatus.OK, headers, null);
 
             // handle determining the routing of this request
             boolean matchingServiceFound = false;
@@ -90,7 +93,7 @@ public class RequestDirector {
                 httpResponse = HttpForwarder.getResponseFromUpstream(httpRequest);
             } else if (!matchingServiceFound) {
                 headers.put("X-RD-Error", ErrorCode.SERVICE_NOT_FOUND.getCode());
-                httpResponse = new HttpResponse(HttpStatus.BAD_REQUEST, headers, null);
+                httpResponse = new AtcHttpResponse(HttpStatus.BAD_REQUEST, headers, null);
             }
 
             // return our response back for transport over the socket
