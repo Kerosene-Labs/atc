@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.UUID;
@@ -142,7 +143,8 @@ public class Main {
     }
 
     public static AtcHttpResponse handleClient(InputStreamReader inputStreamReader, OutputStream output, String traceId)
-            throws IOException, MalformedHttpMessage, InterruptedException, InvalidHttpRequestException {
+            throws IOException, MalformedHttpMessage, InterruptedException, InvalidHttpRequestException,
+            URISyntaxException {
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 
         // parse our http request

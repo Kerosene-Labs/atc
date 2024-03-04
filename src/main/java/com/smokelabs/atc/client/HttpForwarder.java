@@ -2,22 +2,27 @@ package com.smokelabs.atc.client;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.HashMap;
 
 import com.smokelabs.atc.exception.HeaderNotFoundException;
+import com.smokelabs.atc.server.HttpMethod;
 import com.smokelabs.atc.exception.InvalidHttpRequestException;
 import com.smokelabs.atc.server.AtcHttpRequest;
 import com.smokelabs.atc.server.AtcHttpResponse;
 import com.smokelabs.atc.util.HttpStatus;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 public class HttpForwarder {
-    private static AtcHttpResponse convertStdHttpResponseToCustomHttpResponse(
-            java.net.http.HttpResponse<String> httpResponse) {
+    /**
+     * 
+     * @param httpResponse
+     * @return
+     */
+    private static AtcHttpResponse convertStdHttpResponseToAtcHttpResponse(HttpResponse<String> httpResponse) {
         HashMap<String, String> responseHeaders = new HashMap<>();
 
         // convert the HttpHeaders object to a HashMap<String, String>
@@ -37,29 +42,50 @@ public class HttpForwarder {
     }
 
     /**
+     * Converts an AtcHttpRequest to a stdlib HttpRequest
      * 
-     * @param httpRequest
-     * @return
+     * @param atcHttpRequest AtcHttpRequest object
+     * @return HttpRequest object
+     * @throws HeaderNotFoundException
+     * @throws URISyntaxException
+     */
+    private static HttpRequest convertAtcRequestToStdRequest(AtcHttpRequest atcHttpRequest)
+            throws URISyntaxException, HeaderNotFoundException {
+        URI hostUri = new URI(
+                "https://" + atcHttpRequest.getHeaders().getByName("Host").getValue() + atcHttpRequest.getResource());
+        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(hostUri);
+        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(atcHttpRequest.getContent());
+
+        switch (atcHttpRequest.getMethod()) {
+            case HttpMethod.GET:
+                requestBuilder.GET();
+            case HttpMethod.POST:
+                requestBuilder.POST(bodyPublisher);
+            case HttpMethod.DELETE:
+                requestBuilder.DELETE();
+            case HttpMethod.PUT:
+                requestBuilder.PUT(bodyPublisher);
+        }
+
+        return requestBuilder.build();
+    }
+
+    /**
+     * Get an AtcHttpResponse from the upstream by sending the request
+     * 
+     * @param httpRequest AtcHttpRequest object
+     * @return AtcHttpResponse object
+     * @throws URISyntaxException
      * @throws IOException
      * @throws InterruptedException
      * @throws InvalidHttpRequestException
+     * @throws HeaderNotFoundException
      */
-    public static AtcHttpResponse getResponseFromUpstream(AtcHttpRequest httpRequest)
-            throws IOException, InterruptedException, InvalidHttpRequestException {
+    public static AtcHttpResponse getResponseFromUpstream(AtcHttpRequest atcHttpRequest) throws URISyntaxException,
+            IOException, InterruptedException, InvalidHttpRequestException, HeaderNotFoundException {
         HttpClient client = HttpClient.newHttpClient();
-
-        try {
-            String hostHeaderValue = httpRequest.getHeaders().getByName("Host").getValue();
-
-            java.net.http.HttpRequest stdHttpRequest = java.net.http.HttpRequest.newBuilder()
-                    .uri(URI.create(
-                            "https://" + hostHeaderValue + httpRequest.getResource()))
-                    .GET()
-                    .build();
-            java.net.http.HttpResponse<String> upstreamResponse = client.send(stdHttpRequest, BodyHandlers.ofString());
-            return convertStdHttpResponseToCustomHttpResponse(upstreamResponse);
-        } catch (HeaderNotFoundException e) {
-            throw new InvalidHttpRequestException("host header is missing");
-        }
+        HttpRequest httpRequest = convertAtcRequestToStdRequest(atcHttpRequest);
+        HttpResponse<String> upstreamResponse = client.send(httpRequest, BodyHandlers.ofString());
+        return convertStdHttpResponseToAtcHttpResponse(upstreamResponse);
     }
 }

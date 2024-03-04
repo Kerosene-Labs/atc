@@ -1,6 +1,7 @@
 package com.smokelabs.atc.server;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -59,8 +60,10 @@ public class RequestDirector {
      * @throws InterruptedException
      * @throws IOException
      * @throws InvalidHttpRequestException
+     * @throws URISyntaxException
      */
-    public AtcHttpResponse directRequest() throws IOException, InterruptedException, InvalidHttpRequestException {
+    public AtcHttpResponse directRequest()
+            throws IOException, InterruptedException, InvalidHttpRequestException, URISyntaxException {
         // generate our response headers
         generateBaseResponseHeaders();
 
