@@ -57,7 +57,7 @@ native:
 
 docker_image:
   # Use the official docker image.
-  image: docker:cli
+  image: docker:git
   stage: docker
   services:
     - docker:dind
