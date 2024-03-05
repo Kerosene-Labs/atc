@@ -53,6 +53,11 @@ graalvmNative {
             resources {
                 autodetect()
             }
+            javaLauncher.set(javaToolchains.launcherFor {
+                // Compile with native-image from GraalVM for JDK21
+                languageVersion.set(JavaLanguageVersion.of(21))
+                vendor.set(JvmVendorSpec.GRAAL_VM)
+            })
         }
     }
 }
