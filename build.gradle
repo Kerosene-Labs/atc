@@ -53,6 +53,7 @@ graalvmNative {
             resources {
                 autodetect()
             }
+            buildArgs.add("--static")
             javaLauncher.set(javaToolchains.launcherFor {
                 // Compile with native-image from GraalVM for JDK21
                 languageVersion.set(JavaLanguageVersion.of(21))
