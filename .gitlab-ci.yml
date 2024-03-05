@@ -61,8 +61,10 @@ docker_image:
   stage: docker
   services:
     - docker:dind
+  needs:
+    - "build"
   variables:
-    DOCKER_IMAGE_NAME: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+    DOCKER_IMAGE_NAME: atc:$CI_COMMIT_SHA
   cache:
     key: "$CI_COMMIT_REF_NAME"
     policy: push
