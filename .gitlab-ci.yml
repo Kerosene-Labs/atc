@@ -62,7 +62,7 @@ docker_image:
   services:
     - docker:dind
   needs:
-    - "build"
+    - "native"
   variables:
     DOCKER_IMAGE_NAME: atc:$CI_COMMIT_SHA
   cache:
