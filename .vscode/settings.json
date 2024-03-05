@@ -3,7 +3,8 @@
     "yaml.schemas": {
         "/workspace/request-director/configuration.schema.json": [
             "*.yml",
-            "file:///workspace/request-director/configuration.example.yml"
+            "file:///workspace/request-director/configuration.example.yml",
+            "file:///workspace/request-director/.gitlab-ci.yml"
         ]
     }
 }

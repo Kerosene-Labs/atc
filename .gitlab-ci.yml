@@ -10,20 +10,51 @@
 # https://github.com/gradle/gradle
 
 image: gradle:8.6-jdk21
+stages:
+  - build
+  - build_jar
+  - build_native
+  - test
 
 before_script:
   - GRADLE_USER_HOME="$(pwd)/.gradle"
   - export GRADLE_USER_HOME
 
 build:
-  stage: build
-  script: gradle --build-cache assemble
+  stage: build_jar
+  script: gradle --build-cache shadowJar
   cache:
     key: "$CI_COMMIT_REF_NAME"
     policy: push
     paths:
       - build
       - .gradle
+  artifacts:
+    paths:
+      - "build/libs/atc-all.jar"
+    untracked: false
+    when: on_success
+    expire_in: 30 days
+
+build_native:
+  image: registry.gitlab.com/smoke_labs/graalvm-gradle-image
+  stage: build_native
+  script: gradle --build-cache nativeCompile
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: push
+    paths:
+      - build
+      - .gradle
+  needs:
+    - "build"
+  artifacts:
+    paths:
+      - "build/native/nativeCompile/atc"
+    untracked: false
+    when: on_success
+    expire_in: 30 days
+  
 
 include:
   - template: Jobs/SAST.gitlab-ci.yml
