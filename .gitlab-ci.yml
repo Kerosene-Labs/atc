@@ -50,7 +50,7 @@ build_native:
     - "build"
   artifacts:
     paths:
-      - "build/nativeImage/atc"
+      - "build/native/nativeCompile/atc"
     untracked: false
     when: on_success
     expire_in: 30 days
