@@ -37,7 +37,7 @@ build:
     expire_in: 30 days
 
 build_native:
-  image: ghcr.io/graalvm/graalvm-community:21
+  image: registry.gitlab.com/smoke_labs/graalvm-gradle-image
   stage: build_native
   script: gradle --build-cache nativeCompile
   cache:
