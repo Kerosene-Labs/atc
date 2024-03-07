@@ -25,7 +25,7 @@ build:
   script: gradle --build-cache shadowJar
   cache:
     key: "$CI_COMMIT_REF_NAME"
-    policy: push
+    policy: pull-push
     paths:
       - build
       - .gradle
@@ -42,7 +42,7 @@ native:
   script: gradle --build-cache nativeCompile
   cache:
     key: "$CI_COMMIT_REF_NAME"
-    policy: push
+    policy: pull-push
     paths:
       - build
       - .gradle
@@ -67,7 +67,7 @@ docker_image:
     DOCKER_IMAGE_NAME: registry.gitlab.com/smoke_labs/atc:$CI_COMMIT_SHA
   cache:
     key: "$CI_COMMIT_REF_NAME"
-    policy: push
+    policy: pull-push
     paths:
       - build
       - .gradle
