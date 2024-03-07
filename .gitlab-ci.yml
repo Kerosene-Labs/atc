@@ -64,7 +64,7 @@ docker_image:
   needs:
     - "native"
   variables:
-    DOCKER_IMAGE_NAME: $CI_REGISTRY/hlafaille/smokelabs/atc:$CI_COMMIT_SHA
+    DOCKER_IMAGE_NAME: registry.gitlab.com/smoke_labs/atc:$CI_COMMIT_SHA
   cache:
     key: "$CI_COMMIT_REF_NAME"
     policy: push
