@@ -21,7 +21,7 @@ jobs:
           settings-path: ${{ github.workspace }} # location for the settings.xml file
       
       - name: Cache Gradle files
-        uses: actions/cache@4.0.2
+        uses: actions/cache@v4.0.2
         with:
           path: |
             build/
