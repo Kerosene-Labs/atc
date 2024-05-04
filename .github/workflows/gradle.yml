@@ -1,9 +1,10 @@
 name: Gradle
 
 on:
-  push:  
-  release:
-    types: [created]
+  push:
+    branches: '*'
+    tags:
+      - 'v*'
 
 jobs:
   build:
@@ -65,18 +66,20 @@ jobs:
       - name: Test with Gradle
         run: ./gradlew test --scan
     
-  publish:
+  release:
     needs: test
     if: success() && startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
-      # The USERNAME and TOKEN need to correspond to the credentials environment variables used in
-      # the publishing section of your build.gradle
-      - name: Publish to GitHub Packages
-        run: ./gradlew publish
-        env:
-          USERNAME: ${{ github.actor }}
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: jar
+      - name: 
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: Release.txt
 
   dependency-submission:
     runs-on: ubuntu-latest
