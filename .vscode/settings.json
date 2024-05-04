@@ -6,5 +6,6 @@
             "file:///workspace/request-director/configuration.example.yml",
             "file:///workspace/request-director/.gitlab-ci.yml"
         ]
-    }
+    },
+    "java.compile.nullAnalysis.mode": "automatic"
 }

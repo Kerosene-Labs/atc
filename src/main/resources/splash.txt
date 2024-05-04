@@ -2,5 +2,4 @@ Hint: you can generate a "services" configuration section from an OpenAPI spec f
 Humor: the ultimate stress reliever.
 Request Director, what's that?
 We're drowning in requests over here. Just kidding, it's what we do best.
-GitHub? No, I prefer GitLab.
 Technically, the name ATC doesn't make sense. Chances are you're using a wire.
