@@ -12,8 +12,8 @@
 image: gradle:8.6-jdk21
 stages:
   - build
-  - build_jar
-  - build_native
+  - native
+  - docker
   - test
 
 before_script:
@@ -21,11 +21,11 @@ before_script:
   - export GRADLE_USER_HOME
 
 build:
-  stage: build_jar
+  stage: build
   script: gradle --build-cache shadowJar
   cache:
     key: "$CI_COMMIT_REF_NAME"
-    policy: push
+    policy: pull-push
     paths:
       - build
       - .gradle
@@ -36,13 +36,13 @@ build:
     when: on_success
     expire_in: 30 days
 
-build_native:
+native:
   image: registry.gitlab.com/smoke_labs/graalvm-gradle-image
-  stage: build_native
+  stage: native
   script: gradle --build-cache nativeCompile
   cache:
     key: "$CI_COMMIT_REF_NAME"
-    policy: push
+    policy: pull-push
     paths:
       - build
       - .gradle
@@ -54,6 +54,41 @@ build_native:
     untracked: false
     when: on_success
     expire_in: 30 days
+
+docker_image:
+  # Use the official docker image.
+  image: docker:git
+  stage: docker
+  services:
+    - docker:dind
+  needs:
+    - "native"
+  variables:
+    DOCKER_IMAGE_NAME: registry.gitlab.com/smoke_labs/atc:$CI_COMMIT_SHA
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: pull-push
+    paths:
+      - build
+      - .gradle
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  # All branches are tagged with $DOCKER_IMAGE_NAME (defaults to commit ref slug)
+  # Default branch is also tagged with `latest`
+  script:
+    - docker build --pull -t "$DOCKER_IMAGE_NAME" .
+    - docker push "$DOCKER_IMAGE_NAME"
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
+        docker tag "$DOCKER_IMAGE_NAME" "$CI_REGISTRY_IMAGE:latest"
+        docker push "$CI_REGISTRY_IMAGE:latest"
+      fi
+  # Run this job in a branch where a Dockerfile exists
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      exists:
+        - dockerfile
+
   
 
 include:
