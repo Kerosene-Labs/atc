@@ -44,11 +44,6 @@ application {
     mainClass = 'com.smokelabs.atc.Main'
 }
 
-buildScan {
-    termsOfServiceUrl = "https://gradle.com/terms-of-service"
-    termsOfServiceAgree = "yes"
-}
-
 graalvmNative {
     toolchainDetection = true
     binaries {

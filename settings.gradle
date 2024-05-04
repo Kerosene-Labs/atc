@@ -7,5 +7,16 @@
  * in the user manual at https://docs.gradle.org/8.0.2/userguide/multi_project_builds.html
  */
 
+plugins {
+    id "com.gradle.develocity" version "3.17.2"
+}
+
+develocity {
+    buildScan {
+        termsOfUseUrl = "https://gradle.com/help/legal-terms-of-use"
+        termsOfUseAgree = "yes"
+    }
+}
+
 rootProject.name = 'atc'
 include('src')

@@ -36,7 +36,7 @@
 					"**/CVS": true,
 					"**/.DS_Store": true,
 					"**/Thumbs.db": true,
-					".github": true,
+					".github": false,
 					".gradle": true,
 					".devcontainer": true,
 					".vscode": true,
