@@ -1,5 +1,7 @@
-FROM debian:bookworm
+FROM amazoncorretto:21-alpine3.19
 
-COPY build/native/nativeCompile/atc /usr/local/bin/atc
+RUN mkdir /opt/atc
+COPY build/libs/atc-all.jar /opt/atc/atc.jar
 
-ENTRYPOINT ["atc"]
+WORKDIR /opt/atc
+ENTRYPOINT [ "java", "-jar", "atc.jar" ]

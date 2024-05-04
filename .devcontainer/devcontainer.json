@@ -6,7 +6,8 @@
 			"version": "none",
 			"installMaven": "false",
 			"installGradle": "true"
-		}
+		},
+		"ghcr.io/devcontainers/features/docker-in-docker": {}
 	},
 	"mounts": [
 		{
