@@ -9,7 +9,7 @@
             "name": "Run",
             "request": "launch",
             "mainClass": "com.smokelabs.atc.Main",
-            "projectName": "request-director"
+            "projectName": "atc"
         }
     ]
 }
