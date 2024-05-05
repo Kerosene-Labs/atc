@@ -23,7 +23,8 @@ jobs:
         with:
           path: |
             build/
-            gradle/
+            .gradle/caches
+            .gradle/wrapper
           key: ${{ runner.os }}-${{ hashFiles('**/build.gradle') }}
           restore-keys: |
             ${{ runner.os }}-
@@ -54,7 +55,8 @@ jobs:
         with:
           path: |
             build/
-            gradle/
+            .gradle/caches
+            .gradle/wrapper
           key: ${{ runner.os }}-${{ hashFiles('**/build.gradle') }}
           restore-keys: |
             ${{ runner.os }}-

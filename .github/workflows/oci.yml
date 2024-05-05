@@ -1,0 +1,19 @@
+name: OCI
+
+on:
+  workflow_run: 
+    workflows: "Gradle"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Setup Base
+        uses: ./.github/workflows/setup-base.yml@${{ github.head_ref }}
+        with:
+          java-version: '21'
+          gradle-version: 'latest'
+          
