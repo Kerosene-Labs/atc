@@ -11,7 +11,7 @@ jobs:
       packages: write
     steps:
       - name: Setup Base
-        uses: ./.github/workflows/helpers/setup-base.yml@${{ github.head_ref }}
+        uses: ./.github/workflows/helpers/setup-base.yml@${}
         with:
           java-version: '21'
           gradle-version: 'latest'
@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup Base
-        uses: ./.github/workflows/helpers/setup-base.yml@${{ github.head_ref }}
+        uses: ./.github/workflows/helpers/setup-base.yml
         with:
           java-version: '21'
           gradle-version: 'latest'
@@ -41,7 +41,7 @@ jobs:
       contents: write
     steps:
       - name: Setup Base
-        uses: ./.github/workflows/helpers/setup-base.yml@${{ github.head_ref }}
+        uses: ./.github/workflows/helpers/setup-base.yml
         with:
           java-version: '21'
           gradle-version: 'latest'

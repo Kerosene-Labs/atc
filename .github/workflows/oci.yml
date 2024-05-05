@@ -12,7 +12,7 @@ jobs:
       packages: write
     steps:
       - name: Setup Base
-        uses: ./.github/workflows/setup-base.yml@${{ github.head_ref }}
+        uses: ./.github/workflows/setup-base.yml
         with:
           java-version: '21'
           gradle-version: 'latest'
