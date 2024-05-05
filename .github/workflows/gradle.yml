@@ -10,26 +10,11 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
+      - name: Setup Base
+        uses: ./.github/workflows/helpers/setup-base.yml@${{ github.head_ref }}
         with:
-          java-version: "21"
-          distribution: "corretto"
-          server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-          settings-path: ${{ github.workspace }} # location for the settings.xml file
-      - name: Cache Gradle files
-        uses: actions/cache@v4.0.2
-        with:
-          path: |
-            build/
-            .gradle/caches
-            .gradle/wrapper
-          key: ${{ runner.os }}-${{ hashFiles('**/build.gradle') }}
-          restore-keys: |
-            ${{ runner.os }}-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
+          java-version: '21'
+          gradle-version: 'latest'
       - name: Build with Gradle
         run: ./gradlew build
       - uses: actions/upload-artifact@v4.3.3
@@ -42,26 +27,11 @@ jobs:
     if: success()
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
+      - name: Setup Base
+        uses: ./.github/workflows/helpers/setup-base.yml@${{ github.head_ref }}
         with:
-          java-version: "21"
-          distribution: "corretto"
-          server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-          settings-path: ${{ github.workspace }} # location for the settings.xml file
-      - name: Cache Gradle files
-        uses: actions/cache@v4.0.2
-        with:
-          path: |
-            build/
-            .gradle/caches
-            .gradle/wrapper
-          key: ${{ runner.os }}-${{ hashFiles('**/build.gradle') }}
-          restore-keys: |
-            ${{ runner.os }}-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
+          java-version: '21'
+          gradle-version: 'latest'
       - name: Test with Gradle
         run: ./gradlew test --scan
 
@@ -70,11 +40,10 @@ jobs:
     permissions:
       contents: write
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
-      with:
-        java-version: '21'
-        distribution: 'corretto'
-    - name: Generate and submit dependency graph
-      uses: gradle/actions/dependency-submission@417ae3ccd767c252f5661f1ace9f835f9654f2b5
+      - name: Setup Base
+        uses: ./.github/workflows/helpers/setup-base.yml@${{ github.head_ref }}
+        with:
+          java-version: '21'
+          gradle-version: 'latest'
+      - name: Generate and submit dependency graph
+        uses: gradle/actions/dependency-submission@417ae3ccd767c252f5661f1ace9f835f9654f2b5
