@@ -10,7 +10,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-base
       - name: Build with Gradle
-        run: ./gradlew build
+        run: gradle build
       - uses: actions/upload-artifact@v4.3.3
         with:
           name: jar
@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-base
       - name: Test with Gradle
-        run: ./gradlew test --scan
+        run: gradle test --scan
 
   dependency-submission:
     runs-on: ubuntu-latest
