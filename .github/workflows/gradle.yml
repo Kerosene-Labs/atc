@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/workflows/helpers/setup-base.yml
+      - uses: ./.github/workflows/setup-base.yml
         with:
           java-version: '21'
           gradle-version: 'latest'
@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/workflows/helpers/setup-base.yml
+      - uses: ./.github/workflows/setup-base.yml
         with:
           java-version: '21'
           gradle-version: 'latest'
@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/workflows/helpers/setup-base.yml
+      - uses: ./.github/workflows/setup-base.yml
         with:
           java-version: '21'
           gradle-version: 'latest'
