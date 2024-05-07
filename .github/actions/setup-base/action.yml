@@ -5,10 +5,6 @@ inputs:
     description: "Which JDK to use"
     required: true
     default: "21"
-  gradle-version:
-    description: "Which version of Gradle to use"
-    required: true
-    default: "3.1.0"
 runs:
   using: "composite"
   steps:
@@ -25,4 +21,4 @@ runs:
           .gradle/wrapper
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
     - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v${{ inputs.gradle-version }}
+      uses: gradle/actions/setup-gradle@v3.1.0

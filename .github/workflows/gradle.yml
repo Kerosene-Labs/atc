@@ -9,9 +9,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-base
-        with:
-          java-version: '21'
-          gradle-version: 'latest'
       - name: Build with Gradle
         run: ./gradlew build
       - uses: actions/upload-artifact@v4.3.3
@@ -25,9 +22,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-base
-        with:
-          java-version: '21'
-          gradle-version: 'latest'
       - name: Test with Gradle
         run: ./gradlew test --scan
 
@@ -36,8 +30,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-base
-        with:
-          java-version: '21'
-          gradle-version: 'latest'
       - name: Generate and submit dependency graph
         uses: gradle/actions/dependency-submission@417ae3ccd767c252f5661f1ace9f835f9654f2b5
