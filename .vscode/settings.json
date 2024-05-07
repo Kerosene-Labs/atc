@@ -5,7 +5,8 @@
             "*.yml",
             "file:///workspace/request-director/configuration.example.yml",
             "file:///workspace/request-director/.gitlab-ci.yml"
-        ]
+        ],
+        "https://json.schemastore.org/github-action.json": "file:///workspaces/atc/.github/actions/setup-base/action.yml"
     },
     "java.compile.nullAnalysis.mode": "automatic"
 }
