@@ -1,0 +1,24 @@
+name: "Setup Base"
+description: "Setup the JDK, cached Gradle files and Gradle itself"
+inputs:
+  jdk-version:
+    description: "Which JDK to use"
+    required: true
+    default: "21"
+runs:
+  using: "composite"
+  steps:
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ inputs.jdk-version }}
+        distribution: "corretto"
+    - name: Cache Gradle files
+      uses: actions/cache@v4.0.2
+      with:
+        path: |
+          .gradle/caches
+          .gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3.1.0

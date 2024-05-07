@@ -1,5 +1,5 @@
 {
-	"name": "Java",
+	"name": "ATC Development Environment",
 	"image": "mcr.microsoft.com/devcontainers/java:1-21-bookworm",
 	"features": {
 		"ghcr.io/devcontainers/features/java:1": {
@@ -23,7 +23,9 @@
 				"vscjava.vscode-gradle",
 				"DavidAnson.vscode-markdownlint",
 				"ms-azuretools.vscode-docker",
-				"github.vscode-github-actions"
+				"github.vscode-github-actions",
+				"GitHub.vscode-pull-request-github",
+				"redhat.vscode-yaml"
 			],
 			"settings": {
 				"files.autoSave": "afterDelay",
@@ -44,7 +46,7 @@
 					"build": true,
 					"gradle": true,
 					"gradlew": true,
-					"gradlew.bat": true,
+					"gradlew.bat": true
 				}
 			}
 		}
