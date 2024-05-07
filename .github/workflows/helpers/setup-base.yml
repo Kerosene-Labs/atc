@@ -1,4 +1,4 @@
-name: Checkout & Setup Java/Gradle
+name: Setup Base
 
 on:
   workflow_call:

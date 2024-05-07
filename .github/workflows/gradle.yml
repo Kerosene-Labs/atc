@@ -6,13 +6,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     steps:
       - uses: actions/checkout@v4
       - name: Setup Base
-        uses: ./.github/workflows/helpers/setup-base.yml
+        uses: .github/workflows/helpers/setup-base.yml
         with:
           java-version: '21'
           gradle-version: 'latest'
@@ -25,12 +22,11 @@ jobs:
   
   test:
     needs: build
-    if: success()
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Setup Base
-        uses: ./.github/workflows/helpers/setup-base.yml
+        uses: .github/workflows/helpers/setup-base.yml
         with:
           java-version: '21'
           gradle-version: 'latest'
@@ -39,12 +35,10 @@ jobs:
 
   dependency-submission:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
       - name: Setup Base
-        uses: ./.github/workflows/helpers/setup-base.yml
+        uses: .github/workflows/helpers/setup-base.yml
         with:
           java-version: '21'
           gradle-version: 'latest'
