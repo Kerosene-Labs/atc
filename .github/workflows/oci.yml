@@ -2,15 +2,14 @@ name: OCI
 
 on:
   workflow_run: 
-    workflows: "Gradle"
+    workflows: ["Gradle"]
+    types:
+      - completed
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/workflows/setup-base.yml
-        with:
-          java-version: '21'
-          gradle-version: 'latest'
-          
+      - uses: ./.github/actions/setup-base
+      
