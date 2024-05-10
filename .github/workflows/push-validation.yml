@@ -25,10 +25,10 @@ jobs:
       - uses: ./.github/actions/setup-base
       - name: Test with Gradle
         run: gradle test --scan
-  
+
   oci_image:
     needs: build
-    runs-on: ubuntu-lates
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Set up Docker Buildx
