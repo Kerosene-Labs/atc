@@ -1,32 +1,60 @@
-# ATC
+# [atc](https://atc.kerosenelabs.io)
 
-*Air Traffic Control; An API scoped access management solution for organizations that don't enjoy vendor lock-in.*
+ATC; an API gateway designed from the ground up to be vendor independent.
 
-# Features
+* **Reliable:** Utilizing the latest version of Java 21 and the new virtual threads, ATC will be a solid foundation for you to build        applications.
+* **Speedy:** Speed is a must when there might be hundreds of hops between microservices within a stack before the user finally gets
+a response. We can handle that, and more.
+* **Free and Open Source, forever:** Every cloud vendor has their own proprietary solution to API management. Here, we aim to be independent of the big guys.
 
-### Service access control
+## Getting Started
 
-Control what applications can and can't talk to your microservices.
+We recommend you use an OCI Container (Docker, Podman) to deploy ATC. Follow these basic steps (and please file any issues you come across, we're still in early development)!
 
-### Configuration Hot Reloads
+1. Write your configuration file
 
-ATC will automatically detect `configuration.yml` file changes and apply them, no restarts required!
+```yml
+configuration_version: "1.0.0"
 
-### Fork requests
+server:
+  responses:
+    json:
+      enable: true
+  request_forking:
+    enable: true
 
-Call an endpoint on a service with the `X-RD-ForkMode: 1` header and receive a "Forked Request ID" in response. Poll the endpoint again with `X-RD-ForkId: yourForkIdHere`, receiving `HTTP 503 Service Temporarily Unavailable` if the response is still not available, or receiving the proper response from your service.
+services:
+  weather:
+    description: "Weather"
+    address: "api.weather.gov"
+    maintainer: "US Government"
+    scopes:
+      /:
+        methods:
+          - GET
+        description: "Health check"
 
-### Tracing
+  google:
+    description: "El Goog"
+    address: "google.com"
+    maintainer: "Alphabet"
+    scopes:
+      /:
+        methods:
+          - GET
+        description: "Health check"
+```
 
-Automated tracing with the `X-RD-Trace` header.
+2. Pull the latest image
 
-# How it works
+```bash
+docker pull ghcr.io/hlafaille/atc:latest
+```
 
-ATC in a nutshell is an API gateway that handles directing requests to your internal services. When writing an
-application consuming internal APIs, your application will actually be talking to a ATC instance. ATC checks your application's `X-RD-Access` header, compares it with issued access tokens, then compares it with allowed scopes and routes your request accordingly (or responds with an error).
+3. Create a container from this image
 
-# How to use it
+```bash
+docker run -v ${PWD}/your-config-name-here.yml:/opt/atc/configuration.yml -p 8443:8443 atc:latest
+```
 
-1. Point your custom SDKs/client libraries to your ATC instance
-2. Modify `/etc/hosts`/DNS Records to point to ATC
-Providing a slightly better developer experience, this option is preferred. For example, if a developer points their code to `https://auth.api.smokelabs.com/v1/beginSession`, the hosts file / DNS server will actually forward their request to `https://atc.api.smokelabs.com`.
+4. *Heyyy so not all of this works yet, we should really finish this up!*
