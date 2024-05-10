@@ -1,3 +1,3 @@
 # atc
 
-![](atc_logo.png =250x250)
+<img src="atc_logo.png" width="150" height="150"/>
