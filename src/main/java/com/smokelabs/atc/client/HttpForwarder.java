@@ -64,12 +64,16 @@ public class HttpForwarder {
         switch (atcHttpRequest.getMethod()) {
             case HttpMethod.GET:
                 requestBuilder.GET();
+                break;
             case HttpMethod.POST:
                 requestBuilder.POST(bodyPublisher);
+                break;
             case HttpMethod.DELETE:
                 requestBuilder.DELETE();
+                break;
             case HttpMethod.PUT:
                 requestBuilder.PUT(bodyPublisher);
+                break;
         }
 
         return requestBuilder.build();
