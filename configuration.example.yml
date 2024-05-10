@@ -27,5 +27,3 @@ services:
         methods:
           - GET
         description: "Health check"
-
-
