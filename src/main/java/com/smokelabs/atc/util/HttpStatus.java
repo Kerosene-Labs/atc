@@ -6,6 +6,7 @@ public enum HttpStatus {
     ACCEPTED(202, "Accepted"),
     NO_CONTENT(204, "No Content"),
     REDIRECT(301, "Redirect"),
+    FOUND(302, "Found"),
     BAD_REQUEST(400, "Bad Request"),
     UNAUTHORIZED(401, "Unauthorized"),
     FORBIDDEN(403, "Forbidden"),
