@@ -92,7 +92,7 @@ public class RequestDirector {
                         httpRequest.getHeaders().getByName("host").getValue()));
                 httpResponse = HttpForwarder.getResponseFromUpstream(httpRequest);
             } else if (!matchingServiceFound) {
-                headers.put("X-RD-Error", ErrorCode.SERVICE_NOT_FOUND.getCode());
+                headers.put("X-RD-Error", ErrorCode.SERVICE_NOT_FOUND.toString());
                 httpResponse = new AtcHttpResponse(HttpStatus.BAD_REQUEST, headers, null);
             }
 
