@@ -30,8 +30,6 @@ public class ConfigurationHandler {
     }
 
     public ConfigurationHandler() {
-        String configPath = System.getenv("ATC_CONFIG_PATH");
-        
         // load the configuration file
         try {
             try (FileInputStream inputStream = new FileInputStream("/etc/atc/config.json")) {
