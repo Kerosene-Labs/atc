@@ -12,6 +12,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class Configuration {
-    // private Server server;
     private Map<String, Service> services;
 }
