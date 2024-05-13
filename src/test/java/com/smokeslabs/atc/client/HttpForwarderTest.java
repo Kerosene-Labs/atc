@@ -30,6 +30,7 @@ import org.mockito.exceptions.base.MockitoException;
 import com.smokelabs.atc.client.HttpForwarder;
 import com.smokelabs.atc.exception.HeaderNotFoundException;
 import com.smokelabs.atc.exception.InvalidHttpRequestException;
+import com.smokelabs.atc.exception.InvalidRequestServiceIdentityException;
 import com.smokelabs.atc.exception.MalformedHttpMessage;
 import com.smokelabs.atc.server.AtcHttpRequest;
 import com.smokelabs.atc.util.HttpStatus;
@@ -98,7 +99,8 @@ public class HttpForwarderTest {
     @Test
     public void getResponseFromUpstream_ShouldGetAtcHttpResponse_WhenGivenMockedJsonRequest()
             throws MalformedHttpMessage, IOException, URISyntaxException,
-            InterruptedException, InvalidHttpRequestException, HeaderNotFoundException {
+            InterruptedException, InvalidHttpRequestException, HeaderNotFoundException,
+            InvalidRequestServiceIdentityException {
         // create our http request
         var bufferedReader = new BufferedReader(new StringReader(testRawHttpRequestWithJson));
         var atchHttpRequest = new AtcHttpRequest(bufferedReader);
@@ -114,7 +116,7 @@ public class HttpForwarderTest {
     @Test
     public void getResponseFromUpstream_ShouldGetAtcHttpResponse_WhenGivenEmptyRequest()
             throws MalformedHttpMessage, IOException, URISyntaxException, InterruptedException,
-            InvalidHttpRequestException, HeaderNotFoundException {
+            InvalidHttpRequestException, HeaderNotFoundException, InvalidRequestServiceIdentityException {
         // create our http request
         var bufferedReader = new BufferedReader(new StringReader(testRawHttpRequestNoContent));
         var atchHttpRequest = new AtcHttpRequest(bufferedReader);

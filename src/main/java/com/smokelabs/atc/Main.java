@@ -18,6 +18,7 @@ import com.google.common.io.Resources;
 import com.smokelabs.atc.configuration.ConfigurationHandler;
 import com.smokelabs.atc.configuration.pojo.Configuration;
 import com.smokelabs.atc.exception.InvalidHttpRequestException;
+import com.smokelabs.atc.exception.InvalidRequestServiceIdentityException;
 import com.smokelabs.atc.exception.MalformedHttpMessage;
 import com.smokelabs.atc.server.AtcHttpRequest;
 import com.smokelabs.atc.server.AtcHttpResponse;
@@ -30,7 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Main {
-    private static Configuration loadedConfiguration;
     private static SSLSocket socket;
 
     private static String getSplashArt() {
@@ -116,6 +116,12 @@ public class Main {
                     String traceId = "req:" + UUID.randomUUID().toString().replace("-", "");
                     Thread.currentThread().setName(traceId);
                     httpResponse = handleClient(inputStreamReader, outputStream, traceId);
+                } catch (InvalidRequestServiceIdentityException e) {
+                    // if any error during request/response lifecycle happened
+                    log.error("exception occurred while handling client", e);
+                    HashMap<String, String> headers = new HashMap<>();
+                    headers.put("X-RD-Error", ErrorCode.SERVICE_IDENTITY_HEADER_MISSING.toString());
+                    httpResponse = new AtcHttpResponse(HttpStatus.UNAUTHORIZED, headers, null);
                 } catch (Exception e) {
                     // if any error during request/response lifecycle happened
                     log.error("exception occurred while handling client", e);
@@ -139,11 +145,12 @@ public class Main {
                 log.error("socket or stream error", e);
             }
         });
+
     }
 
     public static AtcHttpResponse handleClient(InputStreamReader inputStreamReader, OutputStream output, String traceId)
             throws IOException, MalformedHttpMessage, InterruptedException, InvalidHttpRequestException,
-            URISyntaxException {
+            URISyntaxException, InvalidRequestServiceIdentityException {
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 
         // parse our http request

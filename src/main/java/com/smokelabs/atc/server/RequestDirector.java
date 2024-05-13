@@ -3,8 +3,6 @@ package com.smokelabs.atc.server;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 import com.smokelabs.atc.client.HttpForwarder;
 import com.smokelabs.atc.configuration.ConfigurationHandler;
@@ -54,12 +52,27 @@ public class RequestDirector {
     }
 
     /**
+     * If the {@code requestingService} should have access the
+     * {@code destinationService}.
+     * The outcome of this is determined by the declared {@code scopes} and
+     * {@code consumes} blocks under each respective service in
+     * {@code configuration.json}.
+     * 
+     * @param requestingService  The {@link Service} making the request
+     * @param destinationService The {@link Service} receiving the request
+     */
+    // private boolean canRequestingAccessDestination(Service requestingService,
+    // Service destinationService) {
+
+    // }
+
+    /**
      * Determine what to do with this request
      * 
      * @return HttpResponse object to be sent over the socket
      * @throws InterruptedException
      * @throws IOException
-     * @throws InvalidHttpRequestException
+     * @throws RequestMissingServiceIdentityException
      * @throws URISyntaxException
      */
     public AtcHttpResponse directRequest()
