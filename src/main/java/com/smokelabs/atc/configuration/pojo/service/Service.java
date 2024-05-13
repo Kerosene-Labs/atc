@@ -16,4 +16,5 @@ public class Service {
     private List<String> hosts;
     private String scopesPrefix;
     private Map<String, ServiceScope> scopes;
+    private Map<String, Map<String, ServiceConsumedScope>> consumes;
 }
