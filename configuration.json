@@ -29,7 +29,7 @@
             "hosts": [
                 "api.kerosenelabs.com"
             ],
-            "scopes_prefix": "/v1",
+            "scopesPrefix": "/v1",
             "scopes": {
                 "/healthcheck": {
                     "methods": [

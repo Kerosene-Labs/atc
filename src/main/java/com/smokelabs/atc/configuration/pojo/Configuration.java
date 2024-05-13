@@ -2,7 +2,6 @@ package com.smokelabs.atc.configuration.pojo;
 
 import java.util.Map;
 
-import com.smokelabs.atc.configuration.pojo.server.Server;
 import com.smokelabs.atc.configuration.pojo.service.Service;
 
 import lombok.AllArgsConstructor;

@@ -44,7 +44,7 @@ We recommend you use an OCI Container (Docker, Podman) to deploy ATC. Follow the
             "hosts": [
                 "api.kerosenelabs.com"
             ],
-            "scopes_prefix": "/v1",
+            "scopesPrefix": "/v1",
             "scopes": {
                 "/healthcheck": {
                     "methods": [
