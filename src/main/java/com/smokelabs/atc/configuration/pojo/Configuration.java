@@ -1,7 +1,5 @@
 package com.smokelabs.atc.configuration.pojo;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import com.smokelabs.atc.configuration.pojo.server.Server;
@@ -15,7 +13,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class Configuration {
-    private String configuration_version;
-    private Server server;
+    // private Server server;
     private Map<String, Service> services;
 }

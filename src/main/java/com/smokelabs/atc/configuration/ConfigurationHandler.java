@@ -30,9 +30,11 @@ public class ConfigurationHandler {
     }
 
     public ConfigurationHandler() {
+        String configPath = System.getenv("ATC_CONFIG_PATH");
+        
         // load the configuration file
         try {
-            try (FileInputStream inputStream = new FileInputStream("configuration.example.yml")) {
+            try (FileInputStream inputStream = new FileInputStream("/etc/atc/config.json")) {
                 Yaml yaml = new Yaml(new Constructor(Configuration.class, new LoaderOptions()));
                 loadedConfiguration = yaml.load(inputStream);
             }
