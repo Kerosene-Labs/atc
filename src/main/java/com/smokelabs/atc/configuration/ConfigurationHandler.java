@@ -4,10 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import org.yaml.snakeyaml.LoaderOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smokelabs.atc.configuration.pojo.Configuration;
 
 import lombok.Getter;
@@ -32,9 +29,8 @@ public class ConfigurationHandler {
     public ConfigurationHandler() {
         // load the configuration file
         try {
-            try (FileInputStream inputStream = new FileInputStream("configuration.example.yml")) {
-                Yaml yaml = new Yaml(new Constructor(Configuration.class, new LoaderOptions()));
-                loadedConfiguration = yaml.load(inputStream);
+            try (FileInputStream inputStream = new FileInputStream("/etc/atc/configuration.json")) {
+                loadedConfiguration = new ObjectMapper().readValue(inputStream, Configuration.class);
             }
         } catch (FileNotFoundException e) {
             log.error("configuration file not found", e);

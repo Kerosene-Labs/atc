@@ -16,6 +16,7 @@
 			"type": "bind"
 		}
 	],
+	"postCreateCommand": "sudo mkdir /etc/atc && sudo ln -s /workspaces/atc/configuration.json /etc/atc/configuration.json",
 	"customizations": {
 		"vscode": {
 			"extensions": [

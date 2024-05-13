@@ -81,7 +81,7 @@ public class RequestDirector {
                 service = loadedConfiguration.getServices().get(serviceName);
 
                 // todo call this service, do all that jazz
-                if (service.getAddress().equals(requestHost)) {
+                if (service.getHosts().contains(requestHost)) {
                     matchingServiceFound = true;
                 }
             }
