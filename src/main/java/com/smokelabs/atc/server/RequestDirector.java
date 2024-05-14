@@ -8,6 +8,7 @@ import com.smokelabs.atc.client.HttpForwarder;
 import com.smokelabs.atc.configuration.ConfigurationHandler;
 import com.smokelabs.atc.configuration.pojo.Configuration;
 import com.smokelabs.atc.configuration.pojo.service.Service;
+import com.smokelabs.atc.configuration.pojo.service.ServiceConsumedScope;
 import com.smokelabs.atc.configuration.pojo.service.ServiceScope;
 import com.smokelabs.atc.exception.AtcException;
 import com.smokelabs.atc.exception.HeaderNotFoundException;
@@ -56,6 +57,20 @@ public class RequestDirector {
         headers.put("X-RD-Trace", traceId);
     }
 
+    private ServiceConsumedScope getRequestingServiceConsumedScope(Service requestingService)
+            throws InvalidScopeException {
+        ServiceConsumedScope requestingConsumedScope = null;
+        for (ServiceConsumedScope consumedScope : requestingService.getConsumes()) {
+            if (httpRequest.getResource().equals(consumedScope.getEndpoint())) {
+                requestingConsumedScope = consumedScope;
+            }
+        }
+        if (requestingConsumedScope == null) {
+            throw new InvalidScopeException();
+        }
+        return requestingConsumedScope;
+    }
+
     /**
      * If the {@code requestingService} should have access the
      * {@code destinationService}.
@@ -67,25 +82,21 @@ public class RequestDirector {
      * @param destinationService The {@link Service} receiving the request
      */
     private boolean isRequestingScopedForDestination(Service requestingService, Service destinationService) {
+        // ensure the requesting service has this resource under its 'consumes'
+
         // find a matching scope on the destination
-        ServiceScope matchedScope = null;
+        ServiceScope destinationScope = null;
         for (ServiceScope scope : destinationService.getScopes()) {
-            if (httpRequest.getResource().equals(scope)) {
-                matchedScope = scope;
+            if (httpRequest.getResource().equals(scope.getEndpoint())) {
+                destinationScope = scope;
             }
         }
 
-        // if we didn't find a matched scope, we're not scoped for this destination
-        if (matchedScope == null) {
+        // if we didn't find a destination scope, we're not scoped for this destination
+        if (destinationScope == null) {
             return false;
         }
-        return true;
-
-        // ensure we have the methods on this scope
-        // httpRequest.getMethod().toString()
-        // if (requestingService.getConsumes().get(destinationService)) {
-
-        // }
+        return true; // todo finish
     }
 
     /**

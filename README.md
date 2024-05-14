@@ -14,55 +14,59 @@ We recommend you use an OCI Container (Docker, Podman) to deploy ATC. Follow the
 
 ```json
 {
-    "services": {
-        "weather": {
+    "services": [
+        {
+            "name": "weather",
             "description": "National Weather Service API",
             "maintainer": "United States Government",
             "hosts": [
                 "api.weather.gov"
             ],
-            "scopes": {
-                "/": {
+            "scopes": [
+                {
+                    "endpoint": "/",
                     "methods": [
                         "GET"
                     ]
                 }
-            },
-            "consumes": {
-                "exampleApi": {
-                    "/healthcheck": {
-                        "methods": [
-                            "GET"
-                        ]
-                    }
+            ],
+            "consumes": [
+                {
+                    "service": "exampleApi",
+                    "endpoint": "/healthcheck",
+                    "methods": [
+                        "GET"
+                    ]
                 }
-            }
+            ]
         },
-        "exampleApi": {
-            "description": "Example API provided by Kerosene Labs",
+        {
+            "name": "exampleApi",
+            "description": "Example API",
             "maintainer": "Kerosene Labs",
             "hosts": [
-                "api.kerosenelabs.com"
+                "api.kerosenelabs.net"
             ],
             "scopesPrefix": "/v1",
-            "scopes": {
-                "/healthcheck": {
+            "scopes": [
+                {
+                    "endpoint": "/healthcheck",
                     "methods": [
                         "GET"
                     ]
                 }
-            },
-            "consumes": {
-                "weather": {
-                    "/": {
-                        "methods": [
-                            "GET"
-                        ]
-                    }
+            ],
+            "consumes": [
+                {
+                    "service": "weather",
+                    "endpoint": "/",
+                    "methods": [
+                        "GET"
+                    ]
                 }
-            }
+            ]
         }
-    }
+    ]
 }
 ```
 
