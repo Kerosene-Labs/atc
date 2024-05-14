@@ -89,12 +89,10 @@ public class RequestDirector {
             AtcHttpResponse httpResponse = new AtcHttpResponse(HttpStatus.OK, headers, null);
 
             // get our requesting service
-            Service requestingService;
-            requestingService = ConfigurationHandler.getByName(httpRequest.getRequestingServiceIdentity());
+            Service requestingService = ConfigurationHandler.getByName(httpRequest.getRequestingServiceIdentity());
 
             // get our destination service
-            Service destinationService;
-            destinationService = ConfigurationHandler.getByHost(requestHost);
+            Service destinationService = ConfigurationHandler.getByHost(requestHost);
 
             // ensure we have access
             boolean canAccess = canRequestingAccessDestination(requestingService, destinationService);
