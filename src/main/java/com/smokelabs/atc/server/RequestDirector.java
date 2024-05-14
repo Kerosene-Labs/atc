@@ -13,7 +13,7 @@ import com.smokelabs.atc.configuration.pojo.service.ServiceScope;
 import com.smokelabs.atc.exception.AtcException;
 import com.smokelabs.atc.exception.HeaderNotFoundException;
 import com.smokelabs.atc.exception.InvalidHttpRequestException;
-import com.smokelabs.atc.exception.InvalidScopeException;
+import com.smokelabs.atc.exception.RequestServiceInvalidScopeException;
 import com.smokelabs.atc.exception.RequestServiceNotFoundException;
 import com.smokelabs.atc.exception.ServiceNotFoundException;
 import com.smokelabs.atc.util.ErrorCode;
@@ -57,19 +57,35 @@ public class RequestDirector {
         headers.put("X-RD-Trace", traceId);
     }
 
+    /**
+     * Get the {@link ServiceConsumedScope} of this {@code requestingService} (see
+     * {@link Service}).
+     * 
+     * @param requestingService The service making the request
+     * @throws InvalidScopeException If the
+     * @return {@link ServiceConsumedScope}, being the a service's {@code consumes}
+     *         declaration for this destination endpoint.
+     */
     private ServiceConsumedScope getRequestingServiceConsumedScope(Service requestingService)
-            throws InvalidScopeException {
+            throws RequestServiceInvalidScopeException {
         ServiceConsumedScope requestingConsumedScope = null;
         for (ServiceConsumedScope consumedScope : requestingService.getConsumes()) {
             if (httpRequest.getResource().equals(consumedScope.getEndpoint())) {
                 requestingConsumedScope = consumedScope;
             }
         }
-        if (requestingConsumedScope == null) {
-            throw new InvalidScopeException();
+        if (requestingConsumedScope == null || requestingConsumedScope.getMethods().contains(httpRequest.getMethod())) {
+            throw new RequestServiceInvalidScopeException();
         }
         return requestingConsumedScope;
     }
+
+    // private ServiceScope getDestinationServiceScope(Service destinationService) {
+    // ServiceScope serviceScope = null;
+    // for (ServiceScope scope : destinationService.getScopes()) {
+
+    // }
+    // }
 
     /**
      * If the {@code requestingService} should have access the
@@ -80,9 +96,15 @@ public class RequestDirector {
      * 
      * @param requestingService  The {@link Service} making the request
      * @param destinationService The {@link Service} receiving the request
+     * @throws RequestServiceInvalidScopeException If the {@code requestingService}
+     *                                             is forbidden access on
+     *                                             {@code destinationService}'s
+     *                                             scope.
      */
-    private boolean isRequestingScopedForDestination(Service requestingService, Service destinationService) {
+    private boolean isRequestingScopedForDestination(Service requestingService, Service destinationService)
+            throws RequestServiceInvalidScopeException {
         // ensure the requesting service has this resource under its 'consumes'
+        ServiceConsumedScope requestingServiceConsume = getRequestingServiceConsumedScope(requestingService);
 
         // find a matching scope on the destination
         ServiceScope destinationScope = null;
@@ -132,9 +154,9 @@ public class RequestDirector {
 
             // ensure we have access
             boolean isScoped = isRequestingScopedForDestination(requestingService, destinationService);
-            if (!isScoped) {
-                throw new InvalidScopeException();
-            }
+            // if (!isScoped) {
+            // throw new InvalidScopeException();
+            // }
 
             log.info(String.format("sending request to upstream (%s)",
                     httpRequest.getHeaders().getByName("host").getValue()));
