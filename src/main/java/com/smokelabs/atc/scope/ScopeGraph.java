@@ -2,43 +2,31 @@ package com.smokelabs.atc.scope;
 
 import java.util.List;
 
-import com.smokelabs.atc.server.HttpMethod;
+import lombok.extern.slf4j.Slf4j;
 
-import lombok.Builder;
-
-/**
- * A {@code ScopeGraph} represents the relationship between a requesting
- * services {@code consumes} declaration with a destination services
- * {@code scopes} declaration. A {@code ScopeGraph} is shared per-endpoint, per
- * service, and details all of the allowed HTTP methods that are under both the
- * {@code consumes} and {@code scopes}.
- */
+@Slf4j
 public class ScopeGraph {
-    private final String endpoint;
-    private final List<HttpMethod> methods;
+    private static ScopeGraph instance;
 
-    private ScopeGraph(Builder builder) {
-        this.endpoint = builder.endpoint;
-        this.methods = builder.methods;
+    private List<ScopeGraphRelationship> relationships;
+
+    /**
+     * Constructor. Set up our scope graph.
+     */
+    private ScopeGraph() {
+        log.info("initializing the scope graph");
     }
 
-    public static class Builder {
-        private String endpoint;
-        private List<HttpMethod> methods;
-
-        public Builder endpoint(String endpoint) {
-            this.endpoint = endpoint;
-            return this;
+    /**
+     * Get the global singleton. If one is not initialize, begin doing so and set
+     * it.
+     * 
+     * @return
+     */
+    public static ScopeGraph getInstance() {
+        if (instance == null) {
+            instance = new ScopeGraph();
         }
-
-        public Builder methods(List<HttpMethod> httpMethods) {
-            this.methods = httpMethods;
-            return this;
-        }
-
-        public Builder addMethod(HttpMethod httpMethod) {
-            this.methods.add(httpMethod);
-            return this;
-        }
+        return instance;
     }
 }
