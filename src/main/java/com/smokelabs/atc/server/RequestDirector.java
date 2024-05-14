@@ -12,6 +12,7 @@ import com.smokelabs.atc.exception.AtcException;
 import com.smokelabs.atc.exception.HeaderNotFoundException;
 import com.smokelabs.atc.exception.InvalidHttpRequestException;
 import com.smokelabs.atc.exception.InvalidScopeException;
+import com.smokelabs.atc.exception.RequestServiceNotFoundException;
 import com.smokelabs.atc.exception.ServiceNotFoundException;
 import com.smokelabs.atc.util.ErrorCode;
 import com.smokelabs.atc.util.HttpStatus;
@@ -89,7 +90,12 @@ public class RequestDirector {
             AtcHttpResponse httpResponse = new AtcHttpResponse(HttpStatus.OK, headers, null);
 
             // get our requesting service
-            Service requestingService = ConfigurationHandler.getByName(httpRequest.getRequestingServiceIdentity());
+            Service requestingService;
+            try {
+                requestingService = ConfigurationHandler.getByName(httpRequest.getRequestingServiceIdentity());
+            } catch (ServiceNotFoundException e) {
+                throw new RequestServiceNotFoundException(httpRequest.getRequestingServiceIdentity());
+            }
 
             // get our destination service
             Service destinationService = ConfigurationHandler.getByHost(requestHost);

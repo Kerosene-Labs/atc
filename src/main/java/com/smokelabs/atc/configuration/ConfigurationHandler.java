@@ -40,12 +40,11 @@ public class ConfigurationHandler {
         for (String serviceName : instance.loadedConfiguration.getServices().keySet()) {
             service = instance.loadedConfiguration.getServices().get(serviceName);
 
-            // todo call this service, do all that jazz
             if (service.getHosts().contains(host)) {
                 return service;
             }
         }
-        throw new ServiceNotFoundException(String.format("A service with the host '%s' was not found", host));
+        throw new ServiceNotFoundException();
     }
 
     /**
@@ -60,7 +59,7 @@ public class ConfigurationHandler {
 
         // todo call this service, do all that jazz
         if (service == null) {
-            throw new ServiceNotFoundException(String.format("A service with the name '%s' was not found", name));
+            throw new ServiceNotFoundException();
         }
 
         return service;
