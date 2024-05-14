@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class ServiceScope {
+    private String endpoint;
     private List<String> methods;
-    private String description;
 }

@@ -36,10 +36,7 @@ public class ConfigurationHandler {
      * @throws ServiceNotFoundException If the service could not be found
      */
     public static Service getByHost(String host) throws ServiceNotFoundException {
-        Service service;
-        for (String serviceName : instance.loadedConfiguration.getServices().keySet()) {
-            service = instance.loadedConfiguration.getServices().get(serviceName);
-
+        for (Service service : instance.loadedConfiguration.getServices()) {
             if (service.getHosts().contains(host)) {
                 return service;
             }
@@ -55,14 +52,12 @@ public class ConfigurationHandler {
      * @throws ServiceNotFoundException If the service could not be found
      */
     public static Service getByName(String name) throws ServiceNotFoundException {
-        Service service = instance.loadedConfiguration.getServices().get(name);
-
-        // todo call this service, do all that jazz
-        if (service == null) {
-            throw new ServiceNotFoundException();
+        for (Service service : instance.loadedConfiguration.getServices()) {
+            if (service.getName().equals(name)) {
+                return service;
+            }
         }
-
-        return service;
+        throw new ServiceNotFoundException();
     }
 
     public ConfigurationHandler() {

@@ -11,4 +11,6 @@ import lombok.NoArgsConstructor;
 @Data
 public class ServiceConsumedScope {
     private List<String> methods;
+    private String service;
+    private String endpoint;
 }

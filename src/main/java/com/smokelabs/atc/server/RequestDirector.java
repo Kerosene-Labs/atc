@@ -8,6 +8,7 @@ import com.smokelabs.atc.client.HttpForwarder;
 import com.smokelabs.atc.configuration.ConfigurationHandler;
 import com.smokelabs.atc.configuration.pojo.Configuration;
 import com.smokelabs.atc.configuration.pojo.service.Service;
+import com.smokelabs.atc.configuration.pojo.service.ServiceScope;
 import com.smokelabs.atc.exception.AtcException;
 import com.smokelabs.atc.exception.HeaderNotFoundException;
 import com.smokelabs.atc.exception.InvalidHttpRequestException;
@@ -65,8 +66,26 @@ public class RequestDirector {
      * @param requestingService  The {@link Service} making the request
      * @param destinationService The {@link Service} receiving the request
      */
-    private boolean canRequestingAccessDestination(Service requestingService, Service destinationService) {
+    private boolean isRequestingScopedForDestination(Service requestingService, Service destinationService) {
+        // find a matching scope on the destination
+        ServiceScope matchedScope = null;
+        for (ServiceScope scope : destinationService.getScopes()) {
+            if (httpRequest.getResource().equals(scope)) {
+                matchedScope = scope;
+            }
+        }
+
+        // if we didn't find a matched scope, we're not scoped for this destination
+        if (matchedScope == null) {
+            return false;
+        }
         return true;
+
+        // ensure we have the methods on this scope
+        // httpRequest.getMethod().toString()
+        // if (requestingService.getConsumes().get(destinationService)) {
+
+        // }
     }
 
     /**
@@ -101,8 +120,8 @@ public class RequestDirector {
             Service destinationService = ConfigurationHandler.getByHost(requestHost);
 
             // ensure we have access
-            boolean canAccess = canRequestingAccessDestination(requestingService, destinationService);
-            if (!canAccess) {
+            boolean isScoped = isRequestingScopedForDestination(requestingService, destinationService);
+            if (!isScoped) {
                 throw new InvalidScopeException();
             }
 
