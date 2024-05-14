@@ -6,6 +6,8 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smokelabs.atc.configuration.pojo.Configuration;
+import com.smokelabs.atc.configuration.pojo.service.Service;
+import com.smokelabs.atc.exception.ServiceNotFoundException;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,44 @@ public class ConfigurationHandler {
             log.info("configuration fully loaded");
         }
         return instance;
+    }
+
+    /**
+     * Get a service by its host.
+     * 
+     * @param host The requested host
+     * @return A {@link Service} matching the given host
+     * @throws ServiceNotFoundException If the service could not be found
+     */
+    public static Service getByHost(String host) throws ServiceNotFoundException {
+        Service service;
+        for (String serviceName : instance.loadedConfiguration.getServices().keySet()) {
+            service = instance.loadedConfiguration.getServices().get(serviceName);
+
+            // todo call this service, do all that jazz
+            if (service.getHosts().contains(host)) {
+                return service;
+            }
+        }
+        throw new ServiceNotFoundException(String.format("A service with the host '%s' was not found", host));
+    }
+
+    /**
+     * Get a service by its name.
+     * 
+     * @param name The requested services name
+     * @return A {@link Service} matching the given name
+     * @throws ServiceNotFoundException If the service could not be found
+     */
+    public static Service getByName(String name) throws ServiceNotFoundException {
+        Service service = instance.loadedConfiguration.getServices().get(name);
+
+        // todo call this service, do all that jazz
+        if (service == null) {
+            throw new ServiceNotFoundException(String.format("A service with the name '%s' was not found", name));
+        }
+
+        return service;
     }
 
     public ConfigurationHandler() {

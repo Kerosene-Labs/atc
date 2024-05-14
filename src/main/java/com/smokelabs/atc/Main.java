@@ -17,7 +17,7 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import com.smokelabs.atc.configuration.ConfigurationHandler;
 import com.smokelabs.atc.configuration.pojo.Configuration;
-import com.smokelabs.atc.exception.InvalidHttpRequestException;
+import com.smokelabs.atc.exception.AtcException;
 import com.smokelabs.atc.exception.InvalidRequestServiceIdentityException;
 import com.smokelabs.atc.exception.MalformedHttpMessage;
 import com.smokelabs.atc.server.AtcHttpRequest;
@@ -69,7 +69,7 @@ public class Main {
 
         // load our configuration
         Thread configurationThread = Thread.ofVirtual().name("configuration").start(() -> {
-            loadedConfiguration = ConfigurationHandler.getInstance().getLoadedConfiguration();
+            var loadedConfiguration = ConfigurationHandler.getInstance().getLoadedConfiguration();
         });
         configurationThread.join();
 
@@ -116,12 +116,11 @@ public class Main {
                     String traceId = "req:" + UUID.randomUUID().toString().replace("-", "");
                     Thread.currentThread().setName(traceId);
                     httpResponse = handleClient(inputStreamReader, outputStream, traceId);
-                } catch (InvalidRequestServiceIdentityException e) {
-                    // if any error during request/response lifecycle happened
+                } catch (AtcException e) {
                     log.error("exception occurred while handling client", e);
                     HashMap<String, String> headers = new HashMap<>();
-                    headers.put("X-RD-Error", ErrorCode.SERVICE_IDENTITY_HEADER_MISSING.toString());
-                    httpResponse = new AtcHttpResponse(HttpStatus.UNAUTHORIZED, headers, null);
+                    headers.put("X-RD-Error", e.getErrorCode().toString());
+                    httpResponse = new AtcHttpResponse(e.getHttpStatus(), headers, null);
                 } catch (Exception e) {
                     // if any error during request/response lifecycle happened
                     log.error("exception occurred while handling client", e);
@@ -149,8 +148,7 @@ public class Main {
     }
 
     public static AtcHttpResponse handleClient(InputStreamReader inputStreamReader, OutputStream output, String traceId)
-            throws IOException, MalformedHttpMessage, InterruptedException, InvalidHttpRequestException,
-            URISyntaxException, InvalidRequestServiceIdentityException {
+            throws IOException, InterruptedException, URISyntaxException, AtcException {
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 
         // parse our http request

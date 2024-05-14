@@ -8,8 +8,11 @@ import com.smokelabs.atc.client.HttpForwarder;
 import com.smokelabs.atc.configuration.ConfigurationHandler;
 import com.smokelabs.atc.configuration.pojo.Configuration;
 import com.smokelabs.atc.configuration.pojo.service.Service;
+import com.smokelabs.atc.exception.AtcException;
 import com.smokelabs.atc.exception.HeaderNotFoundException;
 import com.smokelabs.atc.exception.InvalidHttpRequestException;
+import com.smokelabs.atc.exception.InvalidScopeException;
+import com.smokelabs.atc.exception.ServiceNotFoundException;
 import com.smokelabs.atc.util.ErrorCode;
 import com.smokelabs.atc.util.HttpStatus;
 
@@ -61,10 +64,9 @@ public class RequestDirector {
      * @param requestingService  The {@link Service} making the request
      * @param destinationService The {@link Service} receiving the request
      */
-    // private boolean canRequestingAccessDestination(Service requestingService,
-    // Service destinationService) {
-
-    // }
+    private boolean canRequestingAccessDestination(Service requestingService, Service destinationService) {
+        return true;
+    }
 
     /**
      * Determine what to do with this request
@@ -72,11 +74,10 @@ public class RequestDirector {
      * @return HttpResponse object to be sent over the socket
      * @throws InterruptedException
      * @throws IOException
-     * @throws RequestMissingServiceIdentityException
      * @throws URISyntaxException
      */
     public AtcHttpResponse directRequest()
-            throws IOException, InterruptedException, InvalidHttpRequestException, URISyntaxException {
+            throws IOException, InterruptedException, AtcException, URISyntaxException {
         // generate our response headers
         generateBaseResponseHeaders();
 
@@ -87,32 +88,28 @@ public class RequestDirector {
             // set a base response
             AtcHttpResponse httpResponse = new AtcHttpResponse(HttpStatus.OK, headers, null);
 
-            // handle determining the routing of this request
-            boolean matchingServiceFound = false;
-            Service service;
-            for (String serviceName : loadedConfiguration.getServices().keySet()) {
-                service = loadedConfiguration.getServices().get(serviceName);
+            // get our requesting service
+            Service requestingService;
+            requestingService = ConfigurationHandler.getByName(httpRequest.getRequestingServiceIdentity());
 
-                // todo call this service, do all that jazz
-                if (service.getHosts().contains(requestHost)) {
-                    matchingServiceFound = true;
-                }
+            // get our destination service
+            Service destinationService;
+            destinationService = ConfigurationHandler.getByHost(requestHost);
+
+            // ensure we have access
+            boolean canAccess = canRequestingAccessDestination(requestingService, destinationService);
+            if (!canAccess) {
+                throw new InvalidScopeException();
             }
 
-            // if a service was found
-            if (matchingServiceFound) {
-                log.info(String.format("sending request to upstream (%s)",
-                        httpRequest.getHeaders().getByName("host").getValue()));
-                httpResponse = HttpForwarder.getResponseFromUpstream(httpRequest);
-            } else if (!matchingServiceFound) {
-                headers.put("X-RD-Error", ErrorCode.SERVICE_NOT_FOUND.toString());
-                httpResponse = new AtcHttpResponse(HttpStatus.BAD_REQUEST, headers, null);
-            }
+            log.info(String.format("sending request to upstream (%s)",
+                    httpRequest.getHeaders().getByName("host").getValue()));
+            httpResponse = HttpForwarder.getResponseFromUpstream(httpRequest);
 
             // return our response back for transport over the socket
             return httpResponse;
         } catch (HeaderNotFoundException e) {
-            throw new InvalidHttpRequestException("host header is missing");
+            throw new InvalidHttpRequestException();
         }
     }
 
