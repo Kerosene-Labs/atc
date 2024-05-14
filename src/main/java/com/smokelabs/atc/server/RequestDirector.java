@@ -16,7 +16,6 @@ import com.smokelabs.atc.exception.InvalidHttpRequestException;
 import com.smokelabs.atc.exception.RequestServiceInvalidScopeException;
 import com.smokelabs.atc.exception.RequestServiceNotFoundException;
 import com.smokelabs.atc.exception.ServiceNotFoundException;
-import com.smokelabs.atc.util.ErrorCode;
 import com.smokelabs.atc.util.HttpStatus;
 
 import lombok.NonNull;
@@ -66,25 +65,21 @@ public class RequestDirector {
      * @return {@link ServiceConsumedScope}, being the a service's {@code consumes}
      *         declaration for this destination endpoint.
      */
-    private ServiceConsumedScope getRequestingServiceConsumedScope(Service requestingService)
-            throws RequestServiceInvalidScopeException {
-        ServiceConsumedScope requestingConsumedScope = null;
-        for (ServiceConsumedScope consumedScope : requestingService.getConsumes()) {
-            if (httpRequest.getResource().equals(consumedScope.getEndpoint())) {
-                requestingConsumedScope = consumedScope;
-            }
-        }
-        if (requestingConsumedScope == null || requestingConsumedScope.getMethods().contains(httpRequest.getMethod())) {
-            throw new RequestServiceInvalidScopeException();
-        }
-        return requestingConsumedScope;
-    }
-
-    // private ServiceScope getDestinationServiceScope(Service destinationService) {
-    // ServiceScope serviceScope = null;
-    // for (ServiceScope scope : destinationService.getScopes()) {
-
+    // private ServiceConsumedScope getRequestingServiceConsumedScope(Service
+    // requestingService)
+    // throws RequestServiceInvalidScopeException {
+    // ServiceConsumedScope requestingConsumedScope = null;
+    // for (ServiceConsumedScope consumedScope : requestingService.getConsumes()) {
+    // if (consumedScope.getService().equals(requestingConsumedScope)
+    // && httpRequest.getResource().equals(consumedScope.getEndpoint())) {
+    // requestingConsumedScope = consumedScope;
     // }
+    // }
+    // if (requestingConsumedScope == null
+    // || !requestingConsumedScope.getMethods().contains(httpRequest.getMethod())) {
+    // throw new RequestServiceInvalidScopeException();
+    // }
+    // return requestingConsumedScope;
     // }
 
     /**
@@ -101,25 +96,28 @@ public class RequestDirector {
      *                                             {@code destinationService}'s
      *                                             scope.
      */
-    private boolean isRequestingScopedForDestination(Service requestingService, Service destinationService)
-            throws RequestServiceInvalidScopeException {
-        // ensure the requesting service has this resource under its 'consumes'
-        ServiceConsumedScope requestingServiceConsume = getRequestingServiceConsumedScope(requestingService);
+    // private boolean isRequestingScopedForDestination(Service requestingService,
+    // Service destinationService)
+    // throws RequestServiceInvalidScopeException {
+    // // ensure the requesting service has this resource under its 'consumes'
+    // ServiceConsumedScope requestingServiceConsume =
+    // getRequestingServiceConsumedScope(requestingService);
 
-        // find a matching scope on the destination
-        ServiceScope destinationScope = null;
-        for (ServiceScope scope : destinationService.getScopes()) {
-            if (httpRequest.getResource().equals(scope.getEndpoint())) {
-                destinationScope = scope;
-            }
-        }
+    // // find a matching scope on the destination
+    // ServiceScope destinationScope = null;
+    // for (ServiceScope scope : destinationService.getScopes()) {
+    // if (httpRequest.getResource().equals(scope.getEndpoint())) {
+    // destinationScope = scope;
+    // }
+    // }
 
-        // if we didn't find a destination scope, we're not scoped for this destination
-        if (destinationScope == null) {
-            return false;
-        }
-        return true; // todo finish
-    }
+    // // if we didn't find a destination scope, we're not scoped for this
+    // destination
+    // if (destinationScope == null) {
+    // return false;
+    // }
+    // return true; // todo finish
+    // }
 
     /**
      * Determine what to do with this request
@@ -153,7 +151,8 @@ public class RequestDirector {
             Service destinationService = ConfigurationHandler.getByHost(requestHost);
 
             // ensure we have access
-            boolean isScoped = isRequestingScopedForDestination(requestingService, destinationService);
+            // boolean isScoped = isRequestingScopedForDestination(requestingService,
+            // destinationService);
             // if (!isScoped) {
             // throw new InvalidScopeException();
             // }
