@@ -12,7 +12,6 @@ public class AtcException extends Exception {
     private String message;
 
     public AtcException(HttpStatus httpStatus, ErrorCode errorCode) {
-        super(String.format("%s. The HTTP status code is '%s' and the ", errorCode, httpStatus));
         this.httpStatus = httpStatus;
         this.errorCode = errorCode;
     }
@@ -33,6 +32,12 @@ public class AtcException extends Exception {
     }
 
     public String getMessage() {
+        if (this.message == null) {
+            this.message = String.format(
+                    "This exception has no custom message. Here's what we know:\nError Code: %s\nThe HTTP status code is '%s %s'",
+                    errorCode, httpStatus.getCode(),
+                    httpStatus.getText());
+        }
         return this.message;
     }
 }

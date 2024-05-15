@@ -15,7 +15,7 @@ public class Service {
     private String description;
     private String maintainer;
     private List<String> hosts;
-    private String scopesPrefix;
-    private List<ServiceScope> provides;
+    private String providesPrefix;
+    private List<ServiceProvidedScope> provides;
     private List<ServiceConsumedScope> consumes;
 }

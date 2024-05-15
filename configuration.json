@@ -43,7 +43,7 @@
             ],
             "consumes": [
                 {
-                    "service": "weather",
+                    "service": "a",
                     "endpoint": "/",
                     "methods": [
                         "GET"

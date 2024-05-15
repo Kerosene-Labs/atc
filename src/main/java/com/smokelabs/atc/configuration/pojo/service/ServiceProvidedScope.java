@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class ServiceScope {
+public class ServiceProvidedScope {
     private String endpoint;
     private List<HttpMethod> methods;
 }

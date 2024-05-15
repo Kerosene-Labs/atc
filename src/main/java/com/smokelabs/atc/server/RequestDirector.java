@@ -7,9 +7,12 @@ import java.util.HashMap;
 import com.smokelabs.atc.client.HttpForwarder;
 import com.smokelabs.atc.configuration.ConfigurationHandler;
 import com.smokelabs.atc.configuration.pojo.service.Service;
+import com.smokelabs.atc.configuration.pojo.service.ServiceConsumedScope;
+import com.smokelabs.atc.configuration.pojo.service.ServiceProvidedScope;
 import com.smokelabs.atc.exception.AtcException;
 import com.smokelabs.atc.exception.HeaderNotFoundException;
 import com.smokelabs.atc.exception.InvalidHttpRequestException;
+import com.smokelabs.atc.exception.ProvidingServiceInvalidScopeException;
 import com.smokelabs.atc.exception.ConsumingServiceInvalidScopeException;
 import com.smokelabs.atc.exception.ConsumingServiceNotFoundException;
 import com.smokelabs.atc.exception.ServiceNotFoundException;
@@ -59,10 +62,46 @@ public class RequestDirector {
      * 
      * @param consuming The {@link Service} making the request
      * @param providing The {@link Service} receiving the request
-     * @throws ConsumingServiceInvalidScopeException If the consumnig service
+     * @throws ProvidingServiceInvalidScopeException If the providing service does
+     *                                               not have this resource declared
+     *                                               under its {@code provides}
+     *                                               block.
+     * @throws ConsumingServiceInvalidScopeException If the consumnig service does
+     *                                               not have this resource from the
+     *                                               provider declared under its
+     *                                               {@code consumes} block.
      */
-    private boolean isConsumingServiceScopedForProvidingService(Service consuming, Service providing) {
-        return true;
+    private void ensureRequestScopedForProvidingService(Service consuming, Service providing)
+            throws ProvidingServiceInvalidScopeException, ConsumingServiceInvalidScopeException {
+        // determine our pre-requisites (method & resource)
+        HttpMethod method = httpRequest.getMethod();
+        String resource = httpRequest.getResource();
+
+        // iter over the consuming services consumed scopes, ensure we should be able to
+        // consume it. being able to consume it means that the consumed service name
+        // matches the provider, the endpoint/resource match and the HTTP method match.
+        ServiceConsumedScope consumedScope = null;
+        for (ServiceConsumedScope iterConsumedScope : consuming.getConsumes()) {
+            if (iterConsumedScope.getService().equals(providing.getName())
+                    && iterConsumedScope.getEndpoint().equals(resource)
+                    && iterConsumedScope.getMethods().contains(method)) {
+                consumedScope = iterConsumedScope;
+            }
+        }
+        if (consumedScope == null) {
+            throw new ConsumingServiceInvalidScopeException();
+        }
+
+        // iter over the providing services provided scopes, ensure it fits our reqs
+        ServiceProvidedScope providedScope = null;
+        for (ServiceProvidedScope iterProvidedScope : providing.getProvides()) {
+            if (iterProvidedScope.getEndpoint().equals(resource) && iterProvidedScope.getMethods().contains(method)) {
+                providedScope = iterProvidedScope;
+            }
+        }
+        if (providedScope == null) {
+            throw new ProvidingServiceInvalidScopeException();
+        }
     }
 
     /**
@@ -96,11 +135,8 @@ public class RequestDirector {
             // get our destination service
             Service providingService = ConfigurationHandler.getByHost(requestHost);
 
-            // ensure we have access
-            boolean isScoped = isConsumingServiceScopedForProvidingService(consuming, providingService);
-            if (!isScoped) {
-                throw new ConsumingServiceInvalidScopeException();
-            }
+            // ensure the requesting service has scope to the providing service
+            ensureRequestScopedForProvidingService(consuming, providingService);
 
             log.info(String.format("sending request to upstream (%s)",
                     httpRequest.getHeaders().getByName("host").getValue()));
