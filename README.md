@@ -22,7 +22,7 @@ We recommend you use an OCI Container (Docker, Podman) to deploy ATC. Follow the
             "hosts": [
                 "api.weather.gov"
             ],
-            "scopes": [
+            "provides": [
                 {
                     "endpoint": "/",
                     "methods": [
@@ -47,8 +47,8 @@ We recommend you use an OCI Container (Docker, Podman) to deploy ATC. Follow the
             "hosts": [
                 "api.kerosenelabs.net"
             ],
-            "scopesPrefix": "/v1",
-            "scopes": [
+            "providesPrefix": "/v1",
+            "provides": [
                 {
                     "endpoint": "/healthcheck",
                     "methods": [

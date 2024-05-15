@@ -34,7 +34,7 @@ public class AtcHttpRequest {
     private HttpHeaderContainer headers = new HttpHeaderContainer();
 
     @Getter
-    private String requestingServiceIdentity;
+    private String consumingServiceIdentity;
 
     @Getter
     private String content;
@@ -166,7 +166,7 @@ public class AtcHttpRequest {
         // ensure that the X-RD-ServiceIdentity header is set
         try {
             HttpHeader serviceIdentityHeader = headers.getByName("x-rd-serviceidentity");
-            requestingServiceIdentity = serviceIdentityHeader.getValue();
+            consumingServiceIdentity = serviceIdentityHeader.getValue();
         } catch (HeaderNotFoundException e) {
             throw new InvalidRequestServiceIdentityException();
         }

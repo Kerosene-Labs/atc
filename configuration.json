@@ -7,7 +7,7 @@
             "hosts": [
                 "api.weather.gov"
             ],
-            "scopes": [
+            "provides": [
                 {
                     "endpoint": "/",
                     "methods": [
@@ -32,8 +32,8 @@
             "hosts": [
                 "api.kerosenelabs.net"
             ],
-            "scopesPrefix": "/v1",
-            "scopes": [
+            "providesPrefix": "/v1",
+            "provides": [
                 {
                     "endpoint": "/healthcheck",
                     "methods": [
