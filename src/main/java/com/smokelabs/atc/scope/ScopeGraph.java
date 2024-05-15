@@ -14,7 +14,8 @@ public class ScopeGraph {
      * Constructor. Set up our scope graph.
      */
     private ScopeGraph() {
-        log.info("initializing the scope graph");
+        // log.info("initializing the scope graph");
+        log.info("scope graph has not been implemented yet, ignoring");
     }
 
     /**
