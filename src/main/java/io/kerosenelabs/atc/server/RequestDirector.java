@@ -50,7 +50,7 @@ public class RequestDirector {
      */
     private void generateBaseResponseHeaders() {
         this.headers = new HashMap<>();
-        headers.put("X-RD-Trace", traceId);
+        headers.put("X-ATC-Trace", traceId);
     }
 
     /**

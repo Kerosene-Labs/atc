@@ -119,13 +119,13 @@ public class Main {
                 } catch (AtcException e) {
                     log.error("exception occurred while handling client", e);
                     HashMap<String, String> headers = new HashMap<>();
-                    headers.put("X-RD-Error", e.getErrorCode().toString());
+                    headers.put("X-ATC-Error", e.getErrorCode().toString());
                     httpResponse = new AtcHttpResponse(e.getHttpStatus(), headers, null);
                 } catch (Exception e) {
                     // if any error during request/response lifecycle happened
                     log.error("exception occurred while handling client", e);
                     HashMap<String, String> headers = new HashMap<>();
-                    headers.put("X-RD-Error", ErrorCode.ERROR_OCCURRED_DURING_REQUEST_HANDLING.toString());
+                    headers.put("X-ATC-Error", ErrorCode.ERROR_OCCURRED_DURING_REQUEST_HANDLING.toString());
                     httpResponse = new AtcHttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, headers, null);
                 }
 

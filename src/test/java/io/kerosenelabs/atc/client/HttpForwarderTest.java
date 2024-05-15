@@ -44,7 +44,7 @@ public class HttpForwarderTest {
             .append("Host: api.example.com\r\n")
             .append("Accept: application/json\r\n")
             .append("Content-Length: 23\r\n")
-            .append("X-RD-ServiceIdentity: test")
+            .append("X-ATC-ServiceIdentity: test")
             .append("Content-Type: application/json\r\n\r\n")
             .append("{\"message\": \"request\"}\r\n")
             .toString();
@@ -52,7 +52,7 @@ public class HttpForwarderTest {
     private final String testRawHttpRequestNoContent = new StringBuilder()
             .append("GET /endpoint HTTP/1.1\r\n")
             .append("Host: api.example.com\r\n")
-            .append("X-RD-ServiceIdentity: test")
+            .append("X-ATC-ServiceIdentity: test")
             .append("Accept: application/json\r\n\r\n")
             .toString();
 

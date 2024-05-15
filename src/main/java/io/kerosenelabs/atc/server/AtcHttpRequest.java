@@ -138,7 +138,7 @@ public class AtcHttpRequest {
      * @throws MalformedHttpMessage
      * @throws IOException
      * @throws RequestMissingServiceIdentityException If the
-     *                                                {@code X-RD-ServiceIdentity}
+     *                                                {@code X-ATC-ServiceIdentity}
      *                                                header is missing
      */
     public AtcHttpRequest(BufferedReader bufferedReader)
@@ -163,9 +163,9 @@ public class AtcHttpRequest {
         } catch (HeaderNotFoundException e) {
         }
 
-        // ensure that the X-RD-ServiceIdentity header is set
+        // ensure that the X-ATC-ServiceIdentity header is set
         try {
-            HttpHeader serviceIdentityHeader = headers.getByName("x-rd-serviceidentity");
+            HttpHeader serviceIdentityHeader = headers.getByName("x-atc-serviceidentity");
             consumingServiceIdentity = serviceIdentityHeader.getValue();
         } catch (HeaderNotFoundException e) {
             throw new InvalidRequestServiceIdentityException();

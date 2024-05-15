@@ -35,7 +35,7 @@ public class HttpForwarder {
         }
 
         // add our header to let the client know we're involved
-        responseHeaders.put("X-RD-InLine", "1");
+        responseHeaders.put("X-ATC-InLine", "1");
 
         // convert a stdlib HttpResponse to our custom HttpResponse
         return new AtcHttpResponse(HttpStatus.getFromCode(httpResponse.statusCode()), responseHeaders,
