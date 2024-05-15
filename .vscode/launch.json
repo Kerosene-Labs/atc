@@ -8,7 +8,7 @@
             "type": "java",
             "name": "Run",
             "request": "launch",
-            "mainClass": "com.smokelabs.atc.Main",
+            "mainClass": "io.kerosenelabs.atc.Main",
             "projectName": "atc"
         }
     ]

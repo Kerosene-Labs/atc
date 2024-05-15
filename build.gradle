@@ -14,7 +14,7 @@ java {
 shadowJar {
     archiveBaseName.set('atc')
     manifest {
-        attributes 'Main-Class': 'com.smokelabs.atc.Main'
+        attributes 'Main-Class': 'io.kerosenelabs.atc.Main'
     }
 }
 
@@ -43,7 +43,7 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClass = 'com.smokelabs.atc.Main'
+    mainClass = 'io.kerosenelabs.atc.Main'
 }
 
 graalvmNative {
@@ -51,7 +51,7 @@ graalvmNative {
     binaries {
         main {
             imageName = "atc"
-            mainClass = "com.smokelabs.atc.Main"
+            mainClass = "io.kerosenelabs.atc.Main"
             resources {
                 autodetect()
             }
