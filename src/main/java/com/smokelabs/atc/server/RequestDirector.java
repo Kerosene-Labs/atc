@@ -3,16 +3,19 @@ package com.smokelabs.atc.server;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 import com.smokelabs.atc.client.HttpForwarder;
 import com.smokelabs.atc.configuration.ConfigurationHandler;
-import com.smokelabs.atc.configuration.pojo.Configuration;
 import com.smokelabs.atc.configuration.pojo.service.Service;
+import com.smokelabs.atc.configuration.pojo.service.ServiceConsumedScope;
+import com.smokelabs.atc.configuration.pojo.service.ServiceProvidedScope;
+import com.smokelabs.atc.exception.AtcException;
 import com.smokelabs.atc.exception.HeaderNotFoundException;
 import com.smokelabs.atc.exception.InvalidHttpRequestException;
-import com.smokelabs.atc.util.ErrorCode;
+import com.smokelabs.atc.exception.ProvidingServiceInvalidScopeException;
+import com.smokelabs.atc.exception.ConsumingServiceInvalidScopeException;
+import com.smokelabs.atc.exception.ConsumingServiceNotFoundException;
+import com.smokelabs.atc.exception.ServiceNotFoundException;
 import com.smokelabs.atc.util.HttpStatus;
 
 import lombok.NonNull;
@@ -25,8 +28,6 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class RequestDirector {
-    private Configuration loadedConfiguration;
-
     @NonNull
     private AtcHttpRequest httpRequest;
 
@@ -42,7 +43,6 @@ public class RequestDirector {
     public RequestDirector(AtcHttpRequest httpRequest, String traceId) {
         this.httpRequest = httpRequest;
         this.traceId = traceId;
-        this.loadedConfiguration = ConfigurationHandler.getInstance().getLoadedConfiguration();
     }
 
     /**
@@ -54,16 +54,66 @@ public class RequestDirector {
     }
 
     /**
+     * If the {@code consuming} service should have access the
+     * {@code providing} service.
+     * The outcome of this is determined by the declared {@code provides} and
+     * {@code consumes} blocks under each respective service in
+     * {@code configuration.json}.
+     * 
+     * @param consuming The {@link Service} making the request
+     * @param providing The {@link Service} receiving the request
+     * @throws ProvidingServiceInvalidScopeException If the providing service does
+     *                                               not have this resource declared
+     *                                               under its {@code provides}
+     *                                               block.
+     * @throws ConsumingServiceInvalidScopeException If the consumnig service does
+     *                                               not have this resource from the
+     *                                               provider declared under its
+     *                                               {@code consumes} block.
+     */
+    private void ensureRequestScopedForProvidingService(Service consuming, Service providing)
+            throws ProvidingServiceInvalidScopeException, ConsumingServiceInvalidScopeException {
+        // determine our pre-requisites (method & resource)
+        HttpMethod method = httpRequest.getMethod();
+        String resource = httpRequest.getResource();
+
+        // iter over the consuming services consumed scopes, ensure we should be able to
+        // consume it. being able to consume it means that the consumed service name
+        // matches the provider, the endpoint/resource match and the HTTP method match.
+        ServiceConsumedScope consumedScope = null;
+        for (ServiceConsumedScope iterConsumedScope : consuming.getConsumes()) {
+            if (iterConsumedScope.getService().equals(providing.getName())
+                    && iterConsumedScope.getEndpoint().equals(resource)
+                    && iterConsumedScope.getMethods().contains(method)) {
+                consumedScope = iterConsumedScope;
+            }
+        }
+        if (consumedScope == null) {
+            throw new ConsumingServiceInvalidScopeException();
+        }
+
+        // iter over the providing services provided scopes, ensure it fits our reqs
+        ServiceProvidedScope providedScope = null;
+        for (ServiceProvidedScope iterProvidedScope : providing.getProvides()) {
+            if (iterProvidedScope.getEndpoint().equals(resource) && iterProvidedScope.getMethods().contains(method)) {
+                providedScope = iterProvidedScope;
+            }
+        }
+        if (providedScope == null) {
+            throw new ProvidingServiceInvalidScopeException();
+        }
+    }
+
+    /**
      * Determine what to do with this request
      * 
      * @return HttpResponse object to be sent over the socket
      * @throws InterruptedException
      * @throws IOException
-     * @throws InvalidHttpRequestException
      * @throws URISyntaxException
      */
     public AtcHttpResponse directRequest()
-            throws IOException, InterruptedException, InvalidHttpRequestException, URISyntaxException {
+            throws IOException, InterruptedException, AtcException, URISyntaxException {
         // generate our response headers
         generateBaseResponseHeaders();
 
@@ -74,32 +124,28 @@ public class RequestDirector {
             // set a base response
             AtcHttpResponse httpResponse = new AtcHttpResponse(HttpStatus.OK, headers, null);
 
-            // handle determining the routing of this request
-            boolean matchingServiceFound = false;
-            Service service;
-            for (String serviceName : loadedConfiguration.getServices().keySet()) {
-                service = loadedConfiguration.getServices().get(serviceName);
-
-                // todo call this service, do all that jazz
-                if (service.getHosts().contains(requestHost)) {
-                    matchingServiceFound = true;
-                }
+            // get our consuming service
+            Service consuming;
+            try {
+                consuming = ConfigurationHandler.getByName(httpRequest.getConsumingServiceIdentity());
+            } catch (ServiceNotFoundException e) {
+                throw new ConsumingServiceNotFoundException(httpRequest.getConsumingServiceIdentity());
             }
 
-            // if a service was found
-            if (matchingServiceFound) {
-                log.info(String.format("sending request to upstream (%s)",
-                        httpRequest.getHeaders().getByName("host").getValue()));
-                httpResponse = HttpForwarder.getResponseFromUpstream(httpRequest);
-            } else if (!matchingServiceFound) {
-                headers.put("X-RD-Error", ErrorCode.SERVICE_NOT_FOUND.toString());
-                httpResponse = new AtcHttpResponse(HttpStatus.BAD_REQUEST, headers, null);
-            }
+            // get our destination service
+            Service providingService = ConfigurationHandler.getByHost(requestHost);
+
+            // ensure the requesting service has scope to the providing service
+            ensureRequestScopedForProvidingService(consuming, providingService);
+
+            log.info(String.format("sending request to upstream (%s)",
+                    httpRequest.getHeaders().getByName("host").getValue()));
+            httpResponse = HttpForwarder.getResponseFromUpstream(httpRequest);
 
             // return our response back for transport over the socket
             return httpResponse;
         } catch (HeaderNotFoundException e) {
-            throw new InvalidHttpRequestException("host header is missing");
+            throw new InvalidHttpRequestException();
         }
     }
 

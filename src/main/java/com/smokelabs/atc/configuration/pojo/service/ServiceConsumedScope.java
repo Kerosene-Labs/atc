@@ -2,6 +2,8 @@ package com.smokelabs.atc.configuration.pojo.service;
 
 import java.util.List;
 
+import com.smokelabs.atc.server.HttpMethod;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,5 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class ServiceConsumedScope {
-    private List<String> methods;
+    private List<HttpMethod> methods;
+    private String service;
+    private String endpoint;
 }

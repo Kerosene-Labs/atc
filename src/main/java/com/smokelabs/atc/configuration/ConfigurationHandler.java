@@ -6,6 +6,9 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smokelabs.atc.configuration.pojo.Configuration;
+import com.smokelabs.atc.configuration.pojo.service.Service;
+import com.smokelabs.atc.exception.ServiceNotFoundException;
+import com.smokelabs.atc.scope.ScopeGraph;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -22,8 +25,43 @@ public class ConfigurationHandler {
             log.info("loading configuration");
             instance = new ConfigurationHandler();
             log.info("configuration fully loaded");
+
+            // initialize our scopegraph (just in case)
+            ScopeGraph.getInstance();
         }
         return instance;
+    }
+
+    /**
+     * Get a service by its host.
+     * 
+     * @param host The requested host
+     * @return A {@link Service} matching the given host
+     * @throws ServiceNotFoundException If the service could not be found
+     */
+    public static Service getByHost(String host) throws ServiceNotFoundException {
+        for (Service service : instance.loadedConfiguration.getServices()) {
+            if (service.getHosts().contains(host)) {
+                return service;
+            }
+        }
+        throw new ServiceNotFoundException();
+    }
+
+    /**
+     * Get a service by its name.
+     * 
+     * @param name The requested services name
+     * @return A {@link Service} matching the given name
+     * @throws ServiceNotFoundException If the service could not be found
+     */
+    public static Service getByName(String name) throws ServiceNotFoundException {
+        for (Service service : instance.loadedConfiguration.getServices()) {
+            if (service.getName().equals(name)) {
+                return service;
+            }
+        }
+        throw new ServiceNotFoundException();
     }
 
     public ConfigurationHandler() {

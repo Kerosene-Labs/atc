@@ -11,10 +11,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class Service {
+    private String name;
     private String description;
     private String maintainer;
     private List<String> hosts;
-    private String scopesPrefix;
-    private Map<String, ServiceScope> scopes;
-    private Map<String, Map<String, ServiceConsumedScope>> consumes;
+    private String providesPrefix;
+    private List<ServiceProvidedScope> provides;
+    private List<ServiceConsumedScope> consumes;
 }

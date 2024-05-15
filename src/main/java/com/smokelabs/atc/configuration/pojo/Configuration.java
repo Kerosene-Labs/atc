@@ -1,6 +1,6 @@
 package com.smokelabs.atc.configuration.pojo;
 
-import java.util.Map;
+import java.util.List;
 
 import com.smokelabs.atc.configuration.pojo.service.Service;
 
@@ -12,5 +12,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class Configuration {
-    private Map<String, Service> services;
+    private List<Service> services;
 }

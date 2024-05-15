@@ -3,14 +3,10 @@ package com.smokelabs.atc.server;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-import com.google.errorprone.annotations.Immutable;
 import com.smokelabs.atc.exception.HeaderNotFoundException;
+import com.smokelabs.atc.exception.InvalidRequestServiceIdentityException;
 import com.smokelabs.atc.exception.MalformedHttpMessage;
 import com.smokelabs.atc.server.pojo.HttpHeader;
 import com.smokelabs.atc.server.pojo.HttpHeaderContainer;
@@ -36,6 +32,9 @@ public class AtcHttpRequest {
 
     @Getter
     private HttpHeaderContainer headers = new HttpHeaderContainer();
+
+    @Getter
+    private String consumingServiceIdentity;
 
     @Getter
     private String content;
@@ -138,8 +137,12 @@ public class AtcHttpRequest {
      * @return HTTP Method (verb)
      * @throws MalformedHttpMessage
      * @throws IOException
+     * @throws RequestMissingServiceIdentityException If the
+     *                                                {@code X-RD-ServiceIdentity}
+     *                                                header is missing
      */
-    public AtcHttpRequest(BufferedReader bufferedReader) throws MalformedHttpMessage, IOException {
+    public AtcHttpRequest(BufferedReader bufferedReader)
+            throws MalformedHttpMessage, IOException, InvalidRequestServiceIdentityException {
         List<String> messageHead = readRawMessageHead(bufferedReader);
 
         // do http request line
@@ -158,6 +161,14 @@ public class AtcHttpRequest {
                 content = parseContent(contentLength, bufferedReader);
             }
         } catch (HeaderNotFoundException e) {
+        }
+
+        // ensure that the X-RD-ServiceIdentity header is set
+        try {
+            HttpHeader serviceIdentityHeader = headers.getByName("x-rd-serviceidentity");
+            consumingServiceIdentity = serviceIdentityHeader.getValue();
+        } catch (HeaderNotFoundException e) {
+            throw new InvalidRequestServiceIdentityException();
         }
     }
 
