@@ -14,16 +14,16 @@ ATC will automatically detect `configuration.yml` file changes and apply them, n
 
 ### Fork requests
 
-Call an endpoint on a service with the `X-RD-ForkMode: 1` header and receive a "Forked Request ID" in response. Poll the endpoint again with `X-RD-ForkId: yourForkIdHere`, receiving `HTTP 503 Service Temporarily Unavailable` if the response is still not available, or receiving the proper response from your service.
+Call an endpoint on a service with the `X-ATC-ForkMode: 1` header and receive a "Forked Request ID" in response. Poll the endpoint again with `X-ATC-ForkId: yourForkIdHere`, receiving `HTTP 503 Service Temporarily Unavailable` if the response is still not available, or receiving the proper response from your service.
 
 ### Tracing
 
-Automated tracing with the `X-RD-Trace` header.
+Automated tracing with the `X-ATC-Trace` header.
 
 # How it works
 
 ATC in a nutshell is an API gateway that handles directing requests to your internal services. When writing an
-application consuming internal APIs, your application will actually be talking to a ATC instance. ATC checks your application's `X-RD-Access` header, compares it with issued access tokens, then compares it with allowed scopes and routes your request accordingly (or responds with an error).
+application consuming internal APIs, your application will actually be talking to a ATC instance. ATC checks your application's `X-ATC-Access` header, compares it with issued access tokens, then compares it with allowed scopes and routes your request accordingly (or responds with an error).
 
 # How to use it
 
