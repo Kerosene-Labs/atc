@@ -10,23 +10,24 @@ import io.kerosenelabs.kindling.HttpResponse;
 import io.kerosenelabs.kindling.constant.HttpStatus;
 import io.kerosenelabs.kindling.exception.KindlingException;
 import io.kerosenelabs.kindling.handler.RequestHandler;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.io.ObjectInputFilter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class CentralRequestHandler extends RequestHandler {
     private final ConfigurationHandler configurationHandler;
     private final List<Configuration.Service> services;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public CentralRequestHandler() throws IOException {
         configurationHandler = ConfigurationHandler.getInstance();
-        services = configurationHandler.getConfiguration().getServices();;
+        services = configurationHandler.getConfiguration().getServices();
+        ;
         log.info("Central request handler initialized");
     }
 
@@ -94,31 +95,27 @@ public class CentralRequestHandler extends RequestHandler {
         return true;
     }
 
+    @SneakyThrows
     @Override
     public HttpResponse handleError(Throwable t) {
-        ObjectMapper objectMapper = new ObjectMapper();
-
+        // if a kindling exception was thrown OR we're in allowExceptionsInErrorResponse mode
         if (t instanceof KindlingException || System.getProperty("atc.http.allowExceptionsInErrorResponse").equals("true")) {
-            try {
-                return new HttpResponse.Builder()
-                        .status(HttpStatus.BAD_REQUEST)
-                        .headers(new HashMap<>() {
-                            {
-                                put("Content-Type", "application/json");
-                            }
-                        })
-                        .content(objectMapper.writeValueAsString(
-                                new ExceptionErrorResponse(
-                                        t.getMessage(),
-                                        Arrays.stream(t.getStackTrace())
-                                                .map(Object::toString)
-                                                .toList())
-                                        )
-                                )
-                        .build();
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
+            return new HttpResponse.Builder()
+                    .status(HttpStatus.BAD_REQUEST)
+                    .headers(new HashMap<>() {
+                        {
+                            put("Content-Type", "application/json");
+                        }
+                    })
+                    .content(objectMapper.writeValueAsString(
+                                    new ExceptionErrorResponse(
+                                            t.getMessage(),
+                                            Arrays.stream(t.getStackTrace())
+                                                    .map(Object::toString)
+                                                    .toList())
+                            )
+                    )
+                    .build();
         }
 
         return new HttpResponse.Builder()
