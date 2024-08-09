@@ -11,7 +11,9 @@ import io.kerosenelabs.kindling.handler.RequestHandler;
 
 public class Main {
     public static void main(String[] args) throws KindlingException {
+        // 
         KindlingServer server = KindlingServer.getInstance();
+
 
         server.installRequestHandler(new RequestHandler() {
 
