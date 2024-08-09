@@ -1,7 +1,10 @@
 package io.kerosenelabs.atc.server;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.kerosenelabs.atc.configuration.ConfigurationHandler;
 import io.kerosenelabs.atc.configuration.model.Configuration;
+import io.kerosenelabs.atc.model.ExceptionErrorResponse;
 import io.kerosenelabs.kindling.HttpRequest;
 import io.kerosenelabs.kindling.HttpResponse;
 import io.kerosenelabs.kindling.constant.HttpStatus;
@@ -11,8 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.ObjectInputFilter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class CentralRequestHandler extends RequestHandler {
@@ -61,7 +66,7 @@ public class CentralRequestHandler extends RequestHandler {
             }
         }
         if (consumedEndpoint == null) {
-            throw new KindlingException("Requesting service is not allowed to consume the requested service (service is not declared as allowed to consume the endpoint)");
+            throw new KindlingException("Disallowed request, consumer does not declare the provider as consumed");
         }
 
         // iterate over services, ensure that we have a service providing this endpoint
@@ -76,9 +81,10 @@ public class CentralRequestHandler extends RequestHandler {
                 }
             }
         }
-        if (providedEndpoint == null || providingService == null) {
-            throw new KindlingException("Requesting service is not allowed to provide the requested service (requested service does not provide the requested endpoint to the requester)");
+        if (providedEndpoint == null) {
+            throw new KindlingException("Disallowed request, provider does not declare this endpoint as providable");
         }
+
 
         return new HttpResponse.Builder().status(HttpStatus.NO_CONTENT).build();
     }
@@ -90,16 +96,29 @@ public class CentralRequestHandler extends RequestHandler {
 
     @Override
     public HttpResponse handleError(Throwable t) {
-        if (t instanceof KindlingException) {
-            return new HttpResponse.Builder()
-                    .status(HttpStatus.BAD_REQUEST)
-                    .headers(new HashMap<>() {
-                        {
-                            put("Content-Type", "application/json");
-                        }
-                    })
-                    .content(String.format("{\"message\": \"%s\"}", t.getMessage()))
-                    .build();
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        if (t instanceof KindlingException || System.getProperty("atc.http.allowExceptionsInErrorResponse").equals("true")) {
+            try {
+                return new HttpResponse.Builder()
+                        .status(HttpStatus.BAD_REQUEST)
+                        .headers(new HashMap<>() {
+                            {
+                                put("Content-Type", "application/json");
+                            }
+                        })
+                        .content(objectMapper.writeValueAsString(
+                                new ExceptionErrorResponse(
+                                        t.getMessage(),
+                                        Arrays.stream(t.getStackTrace())
+                                                .map(Object::toString)
+                                                .toList())
+                                        )
+                                )
+                        .build();
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         return new HttpResponse.Builder()

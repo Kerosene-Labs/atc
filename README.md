@@ -12,62 +12,43 @@ We recommend you use an OCI Container (Docker, Podman) to deploy ATC. Follow the
 
 1. Write your configuration file
 
-```json
-{
-    "services": [
-        {
-            "name": "weather",
-            "description": "National Weather Service API",
-            "maintainer": "United States Government",
-            "hosts": [
-                "api.weather.gov"
-            ],
-            "provides": [
-                {
-                    "endpoint": "/",
-                    "methods": [
-                        "GET"
-                    ]
-                }
-            ],
-            "consumes": [
-                {
-                    "service": "exampleApi",
-                    "endpoint": "/healthcheck",
-                    "methods": [
-                        "GET"
-                    ]
-                }
-            ]
-        },
-        {
-            "name": "exampleApi",
-            "description": "Example API",
-            "maintainer": "Kerosene Labs",
-            "hosts": [
-                "api.kerosenelabs.net"
-            ],
-            "providesPrefix": "/v1",
-            "provides": [
-                {
-                    "endpoint": "/healthcheck",
-                    "methods": [
-                        "GET"
-                    ]
-                }
-            ],
-            "consumes": [
-                {
-                    "service": "weather",
-                    "endpoint": "/",
-                    "methods": [
-                        "GET"
-                    ]
-                }
-            ]
-        }
-    ]
-}
+```yaml
+api:
+  rootAccessToken: secureRootAccessToken
+services:
+  # Weather API
+  - name: weather
+    description: Weather Channel API
+    maintainer: United States Government
+    identityToken: secureIdentityToken
+    hosts:
+      - api.weather.gov
+    provides:
+      - endpoint: /
+        methods:
+          - GET
+    consumes:
+      - service: exampleApi
+        endpoint: /healthcheck
+        methods:
+          - GET
+
+  # Example API
+  - name: exampleApi
+    description: Example API
+    maintainer: Kerosene Labs
+    identityToken: anotherSecureIdentityToken
+    hosts:
+      - exampleapi.kerosenelabs.io
+    provides:
+      - endpoint: /healthcheck
+        methods:
+          - GET
+    consumes:
+      - service: weather
+        endpoint: /
+        methods:
+          - GET
 ```
 
 2. Pull the latest image
