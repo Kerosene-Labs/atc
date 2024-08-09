@@ -1,18 +1,25 @@
 package io.kerosenelabs.atc;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 
+import io.kerosenelabs.atc.configuration.ConfigurationHandler;
+import io.kerosenelabs.atc.configuration.model.Configuration;
 import io.kerosenelabs.atc.constant.AnsiCodes;
+import io.kerosenelabs.atc.server.CentralRequestHandler;
 import io.kerosenelabs.kindling.HttpRequest;
 import io.kerosenelabs.kindling.HttpResponse;
 import io.kerosenelabs.kindling.KindlingServer;
 import io.kerosenelabs.kindling.constant.HttpMethod;
+import io.kerosenelabs.kindling.constant.HttpStatus;
 import io.kerosenelabs.kindling.exception.KindlingException;
 import io.kerosenelabs.kindling.handler.RequestHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -49,25 +56,25 @@ public class Main {
                 + AnsiCodes.RESET.getCode() + "\n\n";
     }
 
-    public static void main(String[] args) throws KindlingException {
+    public static void main(String[] args) throws KindlingException, IOException {
         System.out.println(getSplashArt());
         System.out.println(getRandomSplashText());
-        log.info("Starting up Kindling server");
+
+        // get our configuration
+        log.info("Parsing configuration");
+        ConfigurationHandler configurationHandler = ConfigurationHandler.getInstance();
+        log.info("Configuration parsed, found {} service(s)", configurationHandler.getConfiguration().getServices().size());
+
+        // build our consumes list
+        List<Configuration.Service.ConsumingEndpoint> allConsumes = configurationHandler.getAllConsumes();
+
+        // setup kindling
+        log.info("Beginning Kindling initialization");
         KindlingServer server = KindlingServer.getInstance();
+        server.installRequestHandler(new CentralRequestHandler());
 
-        server.installRequestHandler(new RequestHandler() {
-
-            @Override
-            public boolean accepts(HttpMethod arg0, String arg1) throws KindlingException {
-                throw new UnsupportedOperationException("Unimplemented method 'accepts'");
-            }
-
-            @Override
-            public HttpResponse handle(HttpRequest arg0) throws KindlingException {
-                throw new UnsupportedOperationException("Unimplemented method 'handle'");
-            }
-
-        });
+        // serve our server
+        log.info("Initialized, starting Kindling server");
         server.serve(8443, Path.of("mykeystore.p12"), "password");
     }
 }

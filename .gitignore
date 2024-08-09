@@ -5,3 +5,6 @@
 target
 
 settings.xml
+configuration.yml
+.idea
+build
