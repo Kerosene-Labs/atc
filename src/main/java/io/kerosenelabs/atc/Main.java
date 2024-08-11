@@ -1,10 +1,8 @@
 package io.kerosenelabs.atc;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -15,13 +13,8 @@ import io.kerosenelabs.atc.configuration.ConfigurationHandler;
 import io.kerosenelabs.atc.configuration.model.Configuration;
 import io.kerosenelabs.atc.constant.AnsiCodes;
 import io.kerosenelabs.atc.server.CentralRequestHandler;
-import io.kerosenelabs.kindling.HttpRequest;
-import io.kerosenelabs.kindling.HttpResponse;
 import io.kerosenelabs.kindling.KindlingServer;
-import io.kerosenelabs.kindling.constant.HttpMethod;
-import io.kerosenelabs.kindling.constant.HttpStatus;
 import io.kerosenelabs.kindling.exception.KindlingException;
-import io.kerosenelabs.kindling.handler.RequestHandler;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
