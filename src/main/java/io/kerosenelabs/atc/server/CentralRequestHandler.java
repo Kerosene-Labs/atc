@@ -50,12 +50,6 @@ public class CentralRequestHandler extends RequestHandler {
             throw new KindlingException("A service could not be found with the specified identity token");
         }
 
-        // get our host header
-        String host = httpRequest.getHeaders().get("Host");
-        if (host == null) {
-            throw new KindlingException("Host header is missing");
-        }
-
         // iterate over services, ensure requestingService consumes a provided endpoint
         Configuration.Service.ConsumingEndpoint consumedEndpoint = null;
         for (Configuration.Service service : services) {
@@ -83,10 +77,19 @@ public class CentralRequestHandler extends RequestHandler {
             }
         }
         if (providedEndpoint == null) {
-            throw new KindlingException("Disallowed request, provider does not declare this endpoint as providable");
+            throw new KindlingException("Disallowed request, provider does not provide this endpoint");
         }
 
+        // get our host header, ensure it's part of the providing service's hosts
+        String host = httpRequest.getHeaders().get("Host");
+        if (host == null) {
+            throw new KindlingException("Host header is missing");
+        }
+        if (!providingService.getHosts().contains(host)) {
+            throw new KindlingException(String.format("Disallowed request, provider does not declare '%s' as a host", host));
+        }
 
+        // forward the request
         return new HttpResponse.Builder().status(HttpStatus.NO_CONTENT).build();
     }
 
