@@ -99,7 +99,7 @@ public class CentralRequestHandler extends RequestHandler {
     @Override
     public HttpResponse handleError(Throwable t) {
         // if a kindling exception was thrown OR we're in allowExceptionsInErrorResponse mode
-        if (t instanceof KindlingException || System.getProperty("atc.http.allowExceptionsInErrorResponse").equals("true")) {
+        if (t instanceof KindlingException || System.getProperty("atc.http.stackTraceInErrorResponse").equals("true")) {
             return new HttpResponse.Builder()
                     .status(HttpStatus.BAD_REQUEST)
                     .headers(new HashMap<>() {
