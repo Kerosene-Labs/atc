@@ -123,8 +123,11 @@ public class CentralRequestHandler extends RequestHandler {
     @SneakyThrows
     @Override
     public HttpResponse handleError(Throwable t) {
+        log.error("An error occurred while processing a request", t);
+
         // if a kindling exception was thrown OR we're in allowExceptionsInErrorResponse mode
-        if (t instanceof KindlingException || System.getProperty("atc.http.stackTraceInErrorResponse").equals("true")) {
+        String stackTraceInErrorResponse = System.getProperty("atc.http.stackTraceInErrorResponse");
+        if (stackTraceInErrorResponse != null && (stackTraceInErrorResponse.equals("true"))) {
             return new HttpResponse.Builder()
                     .status(HttpStatus.BAD_REQUEST)
                     .headers(new HashMap<>() {
@@ -142,7 +145,6 @@ public class CentralRequestHandler extends RequestHandler {
                     )
                     .build();
         }
-
         return new HttpResponse.Builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .headers(new HashMap<>() {
@@ -150,7 +152,7 @@ public class CentralRequestHandler extends RequestHandler {
                         put("Content-Type", "application/json");
                     }
                 })
-                .content("{\"message\": \"Internal Server Error\"}")
+                .content("{\"message\": \"Gateway error. Please contact the system administrator.\"}")
                 .build();
     }
 }
