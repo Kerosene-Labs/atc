@@ -2,6 +2,7 @@ package io.kerosenelabs.atc.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.kerosenelabs.atc.client.SimpleHttpClient;
 import io.kerosenelabs.atc.configuration.ConfigurationHandler;
 import io.kerosenelabs.atc.configuration.model.Configuration;
 import io.kerosenelabs.atc.model.ExceptionErrorResponse;
@@ -14,6 +15,9 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +37,9 @@ public class CentralRequestHandler extends RequestHandler {
 
     @Override
     public HttpResponse handle(HttpRequest httpRequest) throws KindlingException {
+        // record when we started working this request
+        Instant before = Instant.now();
+
         // get our identity token
         String identityToken = httpRequest.getHeaders().get("X-ATC-IdentityToken");
         if (identityToken == null) {
@@ -64,33 +71,48 @@ public class CentralRequestHandler extends RequestHandler {
             throw new KindlingException("Disallowed request, consumer does not declare the provider as consumed");
         }
 
-        // iterate over services, ensure that we have a service providing this endpoint
-        Configuration.Service.ProvidingEndpoint providedEndpoint = null;
+        // get a service by our host
         Configuration.Service providingService = null;
         for (Configuration.Service service : services) {
-            for (Configuration.Service.ProvidingEndpoint provides : service.getProvides()) {
-                if (provides.getEndpoint().equals(httpRequest.getResource()) && provides.getMethods().contains(httpRequest.getHttpMethod())) {
-                    providedEndpoint = provides;
-                    providingService = service;
-                    break;
-                }
+            if (service.getHosts().contains(httpRequest.getHeaders().get("Host"))) {
+                providingService = service;
+                break;
+            }
+        }
+        if (providingService == null) {
+            throw new KindlingException("A provider with the specified host could not be found");
+        }
+
+        // iterate over services, ensure that we have a service providing this endpoint
+        Configuration.Service.ProvidingEndpoint providedEndpoint = null;
+        for (Configuration.Service.ProvidingEndpoint provides : providingService.getProvides()) {
+            if (provides.getEndpoint().equals(httpRequest.getResource()) && provides.getMethods().contains(httpRequest.getHttpMethod())) {
+                providedEndpoint = provides;
+                break;
             }
         }
         if (providedEndpoint == null) {
             throw new KindlingException("Disallowed request, provider does not provide this endpoint");
         }
 
-        // get our host header, ensure it's part of the providing service's hosts
-        String host = httpRequest.getHeaders().get("Host");
-        if (host == null) {
-            throw new KindlingException("Host header is missing");
-        }
-        if (!providingService.getHosts().contains(host)) {
-            throw new KindlingException(String.format("Disallowed request, provider does not declare '%s' as a host", host));
+        // forward the request, get our response
+        HttpResponse httpResponse;
+        try {
+            httpResponse = SimpleHttpClient.doCall(httpRequest);
+        } catch (URISyntaxException | IOException | InterruptedException e) {
+            throw new RuntimeException(e);
         }
 
-        // forward the request
-        return new HttpResponse.Builder().status(HttpStatus.NO_CONTENT).build();
+        // log our request time in the appropriate format
+        Instant after = Instant.now();
+        long duration = Duration.between(before, after).toMillis();
+        String durationUnit = "ms";
+        if (duration == 0) {
+            duration = Duration.between(before, after).toNanos() / 1_000;
+            durationUnit = "us";
+        }
+        log.debug("Request took: {}{}", duration, durationUnit);
+        return httpResponse;
     }
 
     @Override
