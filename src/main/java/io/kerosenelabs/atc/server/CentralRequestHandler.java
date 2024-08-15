@@ -125,7 +125,7 @@ public class CentralRequestHandler extends RequestHandler {
     public HttpResponse handleError(Throwable t) {
         log.error("An error occurred while processing a request", t);
 
-        // if a kindling exception was thrown OR we're in allowExceptionsInErrorResponse mode
+        // if stackTraceInErrorResponse is true
         String stackTraceInErrorResponse = System.getProperty("atc.http.stackTraceInErrorResponse");
         if (stackTraceInErrorResponse != null && (stackTraceInErrorResponse.equals("true"))) {
             return new HttpResponse.Builder()
