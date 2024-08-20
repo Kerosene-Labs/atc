@@ -1,84 +1,43 @@
 package io.kerosenelabs.atc.configuration;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.kerosenelabs.atc.configuration.pojo.Configuration;
-import io.kerosenelabs.atc.configuration.pojo.service.Service;
-import io.kerosenelabs.atc.exception.ServiceNotFoundException;
-import io.kerosenelabs.atc.scope.ScopeGraph;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
+import io.kerosenelabs.atc.configuration.model.Configuration;
 
-@Slf4j
 public class ConfigurationHandler {
-    private static ConfigurationHandler instance = null;
+    private static ConfigurationHandler instance;
+    private Configuration configuration;
 
-    @Getter
-    private Configuration loadedConfiguration;
+    private ConfigurationHandler() throws FileNotFoundException, IOException {
+        ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+        configuration = objectMapper.readValue(new File("configuration.yml"), Configuration.class);
+    }
 
-    public static ConfigurationHandler getInstance() {
+    public static ConfigurationHandler getInstance() throws FileNotFoundException, IOException {
         if (instance == null) {
-            log.info("loading configuration");
             instance = new ConfigurationHandler();
-            log.info("configuration fully loaded");
-
-            // initialize our scopegraph (just in case)
-            ScopeGraph.getInstance();
         }
         return instance;
     }
 
     /**
-     * Get a service by its host.
-     * 
-     * @param host The requested host
-     * @return A {@link Service} matching the given host
-     * @throws ServiceNotFoundException If the service could not be found
+     * Get all services {@code consumes} blocks.
+     * @return A list of {@link Configuration.Service.ConsumingEndpoint}.
      */
-    public static Service getByHost(String host) throws ServiceNotFoundException {
-        for (Service service : instance.loadedConfiguration.getServices()) {
-            if (service.getHosts().contains(host)) {
-                return service;
-            }
+    public List<Configuration.Service.ConsumingEndpoint> getAllConsumes() {
+        List<Configuration.Service.ConsumingEndpoint> consumes = new ArrayList<>();
+        for (Configuration.Service service : configuration.getServices()) {
+            consumes.addAll(service.getConsumes());
         }
-        throw new ServiceNotFoundException();
+        return consumes;
     }
 
-    /**
-     * Get a service by its name.
-     * 
-     * @param name The requested services name
-     * @return A {@link Service} matching the given name
-     * @throws ServiceNotFoundException If the service could not be found
-     */
-    public static Service getByName(String name) throws ServiceNotFoundException {
-        for (Service service : instance.loadedConfiguration.getServices()) {
-            if (service.getName().equals(name)) {
-                return service;
-            }
-        }
-        throw new ServiceNotFoundException();
-    }
-
-    public ConfigurationHandler() {
-        // load the configuration file
-        try {
-            try (FileInputStream inputStream = new FileInputStream("/etc/atc/configuration.json")) {
-                loadedConfiguration = new ObjectMapper().readValue(inputStream, Configuration.class);
-            }
-        } catch (FileNotFoundException e) {
-            log.error("configuration file not found", e);
-            System.exit(1);
-        } catch (IOException e) {
-            log.error("unable to read configuration file", e);
-            System.exit(1);
-        }
-
-        // continue handling our configuration
-        log.info(String.format("%s service(s) recognized", loadedConfiguration.getServices().size()));
+    public Configuration getConfiguration() {
+        return configuration;
     }
 }
